@@ -23,8 +23,11 @@ dependencies {
     // HTML generation
     implementation("org.jetbrains.kotlinx:kotlinx-html-jvm:0.11.0")
     
-    // Web scraping
-    implementation("org.jsoup:jsoup:1.17.2")
+            // Web scraping
+            implementation("org.jsoup:jsoup:1.17.2")
+            
+            // JSON parsing
+            implementation("org.json:json:20231013")
     
     // HTTP client
     implementation("io.ktor:ktor-client-core:2.3.12")
@@ -41,6 +44,13 @@ dependencies {
 
 application {
     mainClass.set("com.hirehi.MainKt")
+}
+
+tasks.register<JavaExec>("runScraper") {
+    group = "application"
+    description = "Run the standalone scraper"
+    classpath = sourceSets["main"].runtimeClasspath
+    mainClass.set("com.hirehi.HireHiScraperStandaloneKt")
 }
 
 tasks.test {

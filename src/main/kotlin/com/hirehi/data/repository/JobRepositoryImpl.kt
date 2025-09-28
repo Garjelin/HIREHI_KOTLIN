@@ -14,15 +14,20 @@ class JobRepositoryImpl(
 ) : JobRepository {
     
     override suspend fun getJobs(params: JobSearchParams): List<Job> {
+        println("=== JobRepositoryImpl.getJobs called ===")
         val cachedJobs = localDataSource.getJobs()
+        println("Cached jobs count: ${cachedJobs.size}")
         
         // Если кэш пустой или устарел (старше 1 часа), обновляем данные
         val lastUpdate = localDataSource.getLastUpdateTime()
         val shouldRefresh = cachedJobs.isEmpty() || isCacheExpired(lastUpdate)
+        println("Should refresh: $shouldRefresh, lastUpdate: $lastUpdate")
         
         return if (shouldRefresh) {
+            println("Refreshing jobs...")
             refreshJobs(params)
         } else {
+            println("Using cached jobs")
             cachedJobs
         }
     }

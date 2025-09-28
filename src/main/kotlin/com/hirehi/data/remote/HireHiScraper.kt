@@ -3,84 +3,87 @@ package com.hirehi.data.remote
 import com.hirehi.domain.model.Job
 import com.hirehi.domain.model.JobSearchParams
 import com.hirehi.domain.repository.JobScraper
-import org.jsoup.Jsoup
-import org.jsoup.nodes.Document
-import org.jsoup.nodes.Element
+import io.ktor.client.*
+import io.ktor.client.engine.cio.*
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
+import io.ktor.http.*
+import org.json.JSONObject
+import org.json.JSONArray
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 
 class HireHiScraper : JobScraper {
     
     private val baseUrl = "https://hirehi.ru"
     private val userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+    private val httpClient = HttpClient(CIO) {
+        expectSuccess = false
+    }
     
     override suspend fun scrapeJobs(params: JobSearchParams): List<Job> {
+        println("=== HireHiScraper.scrapeJobs called ===")
         val jobs = mutableListOf<Job>()
         
         try {
-            // Попробуем несколько подходов к парсингу
-            val urls = listOf(
-                "$baseUrl/qa",
-                "$baseUrl/search?category=qa",
-                "$baseUrl/jobs?category=qa"
+            // Используем API endpoint как в Python скрипте
+            val apiUrl = "$baseUrl/api/search/jobs"
+            
+            val queryParams = mapOf(
+                "page" to "1",
+                "limit" to "27",
+                "sort" to "date",
+                "category" to params.category,
+                "format" to params.format,
+                "level" to params.levels.joinToString(","),
+                "subcategory" to params.subcategory
             )
             
-            for (url in urls) {
-                try {
-                    val document = Jsoup.connect(url)
-                        .userAgent(userAgent)
-                        .timeout(15000)
-                        .followRedirects(true)
-                        .get()
-                    
-                    println("Successfully connected to: $url")
-                    
-                    // Попробуем разные селекторы
-                    val selectors = listOf(
-                        ".job-item, .vacancy-item, .card",
-                        "a[href*='/qa/']",
-                        ".job, .vacancy",
-                        "[data-job], [data-vacancy]",
-                        "article, .post, .item"
-                    )
-                    
-                    for (selector in selectors) {
-                        val elements = document.select(selector)
-                        if (elements.isNotEmpty()) {
-                            println("Found ${elements.size} elements with selector: $selector")
-                            
-                            for (element in elements) {
-                                try {
-                                    val job = parseJobElement(element, baseUrl)
-                                    if (job != null && matchesKeywords(job, params.keywords)) {
-                                        jobs.add(job)
-                                    }
-                                } catch (e: Exception) {
-                                    // Игнорируем ошибки парсинга отдельных элементов
-                                }
-                            }
-                            
-                            if (jobs.isNotEmpty()) break
-                        }
-                    }
-                    
-                    if (jobs.isNotEmpty()) break
-                    
-                } catch (e: Exception) {
-                    println("Error connecting to $url: ${e.message}")
+            val url = buildUrlWithParams(apiUrl, queryParams)
+            println("Requesting API: $url")
+            
+            val response = httpClient.get(url) {
+                headers {
+                    append(HttpHeaders.UserAgent, userAgent)
+                    append(HttpHeaders.Accept, "application/json, text/plain, */*")
+                    append(HttpHeaders.AcceptLanguage, "ru-RU,ru;q=0.9,en;q=0.8")
+                    append(HttpHeaders.Referrer, "$baseUrl/")
                 }
             }
             
+            println("API response status: ${response.status}")
+            val jsonText = response.bodyAsText()
+            println("API response received, content length: ${jsonText.length}")
+            
+            // Парсим JSON ответ
+            val jsonObject = JSONObject(jsonText)
+            val jobsArray = jsonObject.getJSONArray("jobs")
+            
+            println("Found ${jobsArray.length()} jobs in API response")
+            
+            for (i in 0 until jobsArray.length()) {
+                try {
+                    val jobJson = jobsArray.getJSONObject(i)
+                    val job = parseJobFromJson(jobJson)
+                    if (job != null && matchesKeywords(job, params.keywords)) {
+                        jobs.add(job)
+                    }
+                } catch (e: Exception) {
+                    println("Error parsing job $i: ${e.message}")
+                }
+            }
+            
+            println("After filtering by keywords: ${jobs.size} jobs")
+            
             // Если ничего не нашли, создадим тестовые данные
             if (jobs.isEmpty()) {
-                println("No jobs found, creating mock data")
+                println("No jobs found from API, creating mock data")
                 jobs.addAll(createMockJobs())
             }
             
         } catch (e: Exception) {
-            println("Error scraping jobs: ${e.message}")
+            println("Error scraping jobs from API: ${e.message}")
+            e.printStackTrace()
             // В случае ошибки возвращаем тестовые данные
             jobs.addAll(createMockJobs())
         }
@@ -113,26 +116,55 @@ class HireHiScraper : JobScraper {
         return "$baseUrl/search?${queryParams.joinToString("&")}"
     }
     
-    private fun parseJobElement(element: Element, baseUrl: String): Job? {
+    private fun buildUrlWithParams(baseUrl: String, params: Map<String, String>): String {
+        val queryParams = mutableListOf<String>()
+        
+        params.forEach { (key, value) ->
+            queryParams.add("$key=${URLEncoder.encode(value, StandardCharsets.UTF_8)}")
+        }
+        
+        return "$baseUrl?${queryParams.joinToString("&")}"
+    }
+    
+    private fun parseJobFromJson(jobJson: org.json.JSONObject): Job? {
         return try {
-            val titleElement = element.selectFirst("h3, h4, .title, .job-title, .vacancy-title")
-            val companyElement = element.selectFirst(".company, .employer, .company-name")
-            val salaryElement = element.selectFirst(".salary, .wage, .money")
-            val levelElement = element.selectFirst(".level, .experience, .seniority")
-            val formatElement = element.selectFirst(".format, .work-type, .remote")
-            val linkElement = element.selectFirst("a[href]")
+            val id = jobJson.getString("id")
+            val title = jobJson.getString("title")
             
-            val title = titleElement?.text()?.trim() ?: return null
-            val company = companyElement?.text()?.trim() ?: "Не указано"
-            val salary = salaryElement?.text()?.trim()
-            val level = levelElement?.text()?.trim() ?: "Не указано"
-            val format = formatElement?.text()?.trim() ?: "Не указано"
-            val url = linkElement?.attr("href")?.let { href ->
-                if (href.startsWith("http")) href else "$baseUrl$href"
-            } ?: return null
+            // Компания может быть строкой или объектом
+            val company = when {
+                jobJson.has("company") && !jobJson.isNull("company") -> {
+                    val companyObj = jobJson.get("company")
+                    if (companyObj is org.json.JSONObject) {
+                        companyObj.getString("name")
+                    } else {
+                        companyObj.toString()
+                    }
+                }
+                else -> "Не указано"
+            }
             
-            val id = url.substringAfterLast("/").takeIf { it.isNotEmpty() } ?: 
-                    title.hashCode().toString()
+            val salary = if (jobJson.has("salary") && !jobJson.isNull("salary")) {
+                jobJson.getString("salary")
+            } else null
+            
+            val level = if (jobJson.has("level") && !jobJson.isNull("level")) {
+                jobJson.getString("level")
+            } else "Не указано"
+            
+            val format = if (jobJson.has("format") && !jobJson.isNull("format")) {
+                jobJson.getString("format")
+            } else "Не указано"
+            
+            val url = generateJobUrl(id)
+            
+            val description = if (jobJson.has("description_details") && !jobJson.isNull("description_details")) {
+                jobJson.getString("description_details")
+            } else null
+            
+            val publishedAt = if (jobJson.has("created_at") && !jobJson.isNull("created_at")) {
+                jobJson.getString("created_at")
+            } else null
             
             Job(
                 id = id,
@@ -142,39 +174,20 @@ class HireHiScraper : JobScraper {
                 level = level,
                 format = format,
                 url = url,
-                publishedAt = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+                description = description,
+                publishedAt = publishedAt
             )
         } catch (e: Exception) {
+            println("Error parsing job from JSON: ${e.message}")
             null
         }
     }
     
-    private fun parseJobElementAlternative(element: Element, baseUrl: String): Job? {
-        return try {
-            val title = element.text().trim()
-            if (title.isEmpty()) return null
-            
-            val url = element.attr("href").let { href ->
-                if (href.startsWith("http")) href else "$baseUrl$href"
-            }
-            
-            val id = url.substringAfterLast("/").takeIf { it.isNotEmpty() } ?: 
-                    title.hashCode().toString()
-            
-            Job(
-                id = id,
-                title = title,
-                company = "Не указано",
-                salary = null,
-                level = "Не указано",
-                format = "Не указано",
-                url = url,
-                publishedAt = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
-            )
-        } catch (e: Exception) {
-            null
-        }
+    private fun generateJobUrl(jobId: String): String {
+        return "$baseUrl/qa/qa-testirovshchik-auto-$jobId"
     }
+    
+    
     
     private fun matchesKeywords(job: Job, keywords: List<String>): Boolean {
         if (keywords.isEmpty()) return true
