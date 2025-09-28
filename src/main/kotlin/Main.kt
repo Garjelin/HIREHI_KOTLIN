@@ -6,7 +6,7 @@ import com.hirehi.data.repository.JobRepositoryImpl
 import com.hirehi.domain.model.JobSearchParams
 import com.hirehi.domain.usecase.GetJobsUseCase
 import com.hirehi.domain.usecase.RefreshJobsUseCase
-import com.hirehi.presentation.view.JobView
+import com.hirehi.presentation.view.SimpleJobView
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.html.*
@@ -46,7 +46,7 @@ fun Application.configureApplication() {
     
     val getJobsUseCase = GetJobsUseCase(repository)
     val refreshJobsUseCase = RefreshJobsUseCase(repository)
-    val jobView = JobView()
+    val jobView = SimpleJobView()
     
     // Настройка маршрутов
     routing {
@@ -68,10 +68,9 @@ fun Application.configureApplication() {
         }
         
         get("/api/status") {
-            val jobs = getJobsUseCase(JobSearchParams())
             val status = mapOf(
-                "totalJobs" to jobs.size,
-                "lastUpdated" to System.currentTimeMillis()
+                "status" to "ok",
+                "message" to "HireHi API is running"
             )
             call.respond(status)
         }

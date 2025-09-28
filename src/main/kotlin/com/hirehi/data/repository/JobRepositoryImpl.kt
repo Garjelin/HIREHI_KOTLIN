@@ -1,15 +1,15 @@
 package com.hirehi.data.repository
 
 import com.hirehi.data.local.JobLocalDataSource
-import com.hirehi.data.remote.HireHiScraper
 import com.hirehi.domain.model.Job
 import com.hirehi.domain.model.JobSearchParams
 import com.hirehi.domain.repository.JobRepository
+import com.hirehi.domain.repository.JobScraper
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 class JobRepositoryImpl(
-    private val scraper: HireHiScraper,
+    private val scraper: JobScraper,
     private val localDataSource: JobLocalDataSource
 ) : JobRepository {
     
