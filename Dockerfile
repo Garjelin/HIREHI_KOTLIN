@@ -8,7 +8,7 @@ WORKDIR /app
 COPY . .
 
 # Собираем приложение
-RUN ./gradlew build --no-daemon
+RUN ./gradlew shadowJar --no-daemon
 
 # Создаем финальный образ
 FROM eclipse-temurin:17-jre-alpine
@@ -16,8 +16,8 @@ FROM eclipse-temurin:17-jre-alpine
 # Устанавливаем рабочую директорию
 WORKDIR /app
 
-# Копируем собранный JAR файл
-COPY --from=build /app/build/libs/*.jar app.jar
+# Копируем собранный shadow JAR файл
+COPY --from=build /app/build/libs/*-all.jar app.jar
 
 # Открываем порт (Render автоматически установит PORT)
 EXPOSE 10000
