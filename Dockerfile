@@ -4,13 +4,17 @@ FROM gradle:8.5-jdk17 AS build
 # Устанавливаем рабочую директорию
 WORKDIR /app
 
-# Копируем файлы проекта
-COPY . .
+# Копируем файлы конфигурации Gradle
+COPY build.gradle.kts gradle.properties settings.gradle.kts ./
+COPY gradle/ ./gradle/
+
+# Копируем исходный код
+COPY src/ ./src/
 
 # Собираем приложение
 RUN ./gradlew build --no-daemon
 
-# Создаем финальный образ с JRE
+# Создаем финальный образ
 FROM openjdk:17-jre-slim
 
 # Устанавливаем рабочую директорию
@@ -19,7 +23,7 @@ WORKDIR /app
 # Копируем собранный JAR файл
 COPY --from=build /app/build/libs/*.jar app.jar
 
-# Открываем порт (Render.com ожидает порт 10000)
+# Открываем порт (Render автоматически установит PORT)
 EXPOSE 10000
 
 # Запускаем приложение
