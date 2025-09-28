@@ -15,7 +15,7 @@ COPY src/ ./src/
 RUN ./gradlew build --no-daemon
 
 # Создаем финальный образ
-FROM openjdk:17-jre-slim
+FROM eclipse-temurin:17-jre-alpine
 
 # Устанавливаем рабочую директорию
 WORKDIR /app

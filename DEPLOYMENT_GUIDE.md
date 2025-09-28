@@ -153,7 +153,7 @@ services:
 3. **Настройте сервис:**
    - **Name**: `hirehi-kotlin`
    - **Environment**: `Docker`
-   - **Dockerfile Path**: `./Dockerfile`
+   - **Dockerfile Path**: `Dockerfile` (без ./)
    - **Plan**: `Free` (для начала)
    - **Auto-Deploy**: `Yes`
 

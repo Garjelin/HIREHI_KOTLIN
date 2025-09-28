@@ -176,7 +176,7 @@ git push origin main
 # - New + → Web Service
 # - Подключите GitHub репозиторий
 # - Environment: Docker
-# - Dockerfile Path: ./Dockerfile
+# - Dockerfile Path: Dockerfile
 ```
 
 ### Подробная инструкция

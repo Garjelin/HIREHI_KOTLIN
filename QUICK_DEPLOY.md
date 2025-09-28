@@ -16,7 +16,7 @@ git push origin main
 4. Настройки:
    - **Name**: `hirehi-kotlin`
    - **Environment**: `Docker`
-   - **Dockerfile Path**: `./Dockerfile`
+   - **Dockerfile Path**: `Dockerfile`
    - **Plan**: `Free`
 5. Нажмите "Create Web Service"
 
