@@ -5,6 +5,8 @@
 ```
 src/main/kotlin/com/hirehi/
 ├── Main.kt                           # Точка входа приложения
+├── application/                      # Application Layer
+│   └── HireHiApplication.kt         # Основная логика приложения
 ├── data/                            # Data Layer
 │   ├── remote/
 │   │   └── HireHiScraper.kt        # Реализация скрапинга данных
@@ -18,6 +20,15 @@ src/main/kotlin/com/hirehi/
 │   │   └── JobScraper.kt           # Интерфейс скрапера
 │   └── usecase/
 │       └── GetJobsUseCase.kt       # Use Case для получения вакансий
+└── presentation/                    # Presentation Layer
+    ├── service/
+    │   └── JobService.kt           # Сервис для управления данными
+    ├── view/
+    │   └── JobView.kt              # View для генерации HTML
+    ├── viewmodel/
+    │   └── JobViewModel.kt         # ViewModel (пока не используется)
+    └── webserver/
+        └── WebServer.kt            # Веб-сервер Ktor
 ```
 
 ## Принципы Clean Architecture
@@ -33,15 +44,25 @@ src/main/kotlin/com/hirehi/
 - **JobRepositoryImpl**: Реализует `JobRepository` для управления данными
 - **Зависит** от Domain Layer через интерфейсы
 
-### 3. **Presentation Layer** (Main.kt)
-- **Точка входа**: `main()` функция
-- **Dependency Injection**: Создает экземпляры и связывает зависимости
-- **Веб-сервер**: Ktor для обслуживания HTML страниц
+### 3. **Application Layer**
+- **HireHiApplication**: Основная логика приложения, координация между слоями
+- **Управление жизненным циклом**: Запуск и остановка компонентов
+
+### 4. **Presentation Layer**
+- **JobService**: Сервис для управления данными и файлами
+- **JobView**: Генерация HTML страниц
+- **JobViewModel**: ViewModel для будущего использования (MVVM)
+- **WebServer**: Веб-сервер Ktor для обслуживания HTML страниц
+- **Main.kt**: Точка входа, только запуск приложения
 
 ## Поток данных
 
 ```
 Main.kt
+    ↓
+HireHiApplication
+    ↓
+JobService
     ↓
 GetJobsUseCase
     ↓
@@ -62,10 +83,18 @@ hirehi.ru API
 
 ## Удаленные файлы
 
+### Из корня проекта:
+- `hirehi_all_jobs.json` - устаревший JSON файл
+- `hirehi_filtered_jobs.json` - устаревший JSON файл  
+- `hirehi_jobs.json` - устаревший JSON файл
+- `jobs_display.html` - устаревший HTML файл
+- `last_update.txt` - устаревший файл
+
+### Из кода:
 - `HireHiScraperStandalone.kt` - заменен на Clean Architecture
 - `JobLocalDataSource.kt` - не использовался
 - `MockScraper.kt` - не использовался
-- `JobView.kt` - не использовался
+- `JobView.kt` (старый) - заменен на новый в presentation/view/
 - `SimpleJobView.kt` - не использовался
 - `JobController.kt` - не использовался
 - `RefreshJobsUseCase.kt` - не использовался
@@ -75,5 +104,9 @@ hirehi.ru API
 ✅ **16 отфильтрованных вакансий** получаются корректно  
 ✅ **Веб-сервер** работает на порту 10000  
 ✅ **HTML страница** генерируется с правильными ссылками  
-✅ **Clean Architecture** соблюдена  
-✅ **Код** очищен от неиспользуемых файлов
+✅ **Clean Architecture** полностью соблюдена  
+✅ **Код** очищен от неиспользуемых файлов  
+✅ **Main.kt** упрощен - только запуск приложения  
+✅ **View и ViewModel** слой добавлен  
+✅ **Корень проекта** очищен от устаревших файлов  
+✅ **Приложение** готово для развертывания на Render.com
