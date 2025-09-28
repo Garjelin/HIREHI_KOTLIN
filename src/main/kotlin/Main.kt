@@ -1,16 +1,83 @@
-package org.example
+package com.hirehi
 
-//TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
-// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
+import com.hirehi.data.local.JobLocalDataSource
+import com.hirehi.data.remote.HireHiScraper
+import com.hirehi.data.repository.JobRepositoryImpl
+import com.hirehi.domain.model.JobSearchParams
+import com.hirehi.domain.usecase.GetJobsUseCase
+import com.hirehi.domain.usecase.RefreshJobsUseCase
+import com.hirehi.presentation.view.JobView
+import io.ktor.server.application.*
+import io.ktor.server.engine.*
+import io.ktor.server.html.*
+import io.ktor.server.netty.*
+import io.ktor.server.plugins.contentnegotiation.*
+import io.ktor.server.plugins.cors.routing.*
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
+import io.ktor.serialization.kotlinx.json.*
+import kotlinx.serialization.json.Json
+
 fun main() {
-    val name = "Kotlin"
-    //TIP Press <shortcut actionId="ShowIntentionActions"/> with your caret at the highlighted text
-    // to see how IntelliJ IDEA suggests fixing it.
-    println("Hello, " + name + "!")
+    embeddedServer(Netty, port = getPort()) {
+        configureApplication()
+    }.start(wait = true)
+}
 
-    for (i in 1..5) {
-        //TIP Press <shortcut actionId="Debug"/> to start debugging your code. We have set one <icon src="AllIcons.Debugger.Db_set_breakpoint"/> breakpoint
-        // for you, but you can always add more by pressing <shortcut actionId="ToggleLineBreakpoint"/>.
-        println("i = $i")
+fun Application.configureApplication() {
+    install(ContentNegotiation) {
+        json(Json {
+            prettyPrint = true
+            isLenient = true
+        })
     }
+    
+    install(CORS) {
+        anyHost()
+        allowHeader("Content-Type")
+        allowMethod(io.ktor.http.HttpMethod.Get)
+        allowMethod(io.ktor.http.HttpMethod.Post)
+    }
+    
+    // Инициализация зависимостей
+    val scraper = HireHiScraper()
+    val localDataSource = JobLocalDataSource()
+    val repository = JobRepositoryImpl(scraper, localDataSource)
+    
+    val getJobsUseCase = GetJobsUseCase(repository)
+    val refreshJobsUseCase = RefreshJobsUseCase(repository)
+    val jobView = JobView()
+    
+    // Настройка маршрутов
+    routing {
+        get("/") {
+            val jobs = getJobsUseCase(JobSearchParams())
+            call.respondHtml {
+                jobView.renderJobsPage(this, jobs)
+            }
+        }
+        
+        get("/api/jobs") {
+            val jobs = getJobsUseCase(JobSearchParams())
+            call.respond(jobs)
+        }
+        
+        post("/api/refresh") {
+            val jobs = refreshJobsUseCase(JobSearchParams())
+            call.respond(jobs)
+        }
+        
+        get("/api/status") {
+            val jobs = getJobsUseCase(JobSearchParams())
+            val status = mapOf(
+                "totalJobs" to jobs.size,
+                "lastUpdated" to System.currentTimeMillis()
+            )
+            call.respond(status)
+        }
+    }
+}
+
+private fun getPort(): Int {
+    return System.getenv("PORT")?.toIntOrNull() ?: 10000
 }
