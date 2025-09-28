@@ -6,7 +6,6 @@ import com.hirehi.data.repository.JobRepositoryImpl
 import com.hirehi.domain.model.JobSearchParams
 import com.hirehi.domain.usecase.GetJobsUseCase
 import com.hirehi.domain.usecase.RefreshJobsUseCase
-import com.hirehi.presentation.view.SimpleJobView
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.html.*
@@ -16,6 +15,7 @@ import io.ktor.server.plugins.cors.routing.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.serialization.kotlinx.json.*
+import io.ktor.http.*
 import kotlinx.serialization.json.Json
 import kotlinx.coroutines.*
 import java.io.File
@@ -71,14 +71,15 @@ fun Application.configureApplication() {
         allowMethod(io.ktor.http.HttpMethod.Post)
     }
 
-    val jobView = SimpleJobView()
 
     // Настройка маршрутов
     routing {
         get("/") {
-            val jobs = loadJobsFromJson()
-            call.respondHtml {
-                jobView.renderJobsPage(this, jobs)
+            val htmlFile = File("jobs_display.html")
+            if (htmlFile.exists()) {
+                call.respondText(htmlFile.readText(), ContentType.Text.Html)
+            } else {
+                call.respondText("HTML файл не найден.", ContentType.Text.Plain)
             }
         }
 
@@ -150,6 +151,8 @@ private fun parseJobFromJson(jobJson: JSONObject): com.hirehi.domain.model.Job? 
         
         val url = if (jobJson.has("url") && !jobJson.isNull("url")) {
             jobJson.getString("url")
+        } else if (jobJson.has("link") && !jobJson.isNull("link")) {
+            jobJson.getString("link")
         } else "https://hirehi.ru"
         
         val description = if (jobJson.has("description") && !jobJson.isNull("description")) {
@@ -288,12 +291,7 @@ private suspend fun startWebServer() {
         
     } catch (e: Exception) {
         println("❌ Ошибка при запуске веб-сервера: ${e.message}")
-        // Если сервер не запустился, открываем HTML файл напрямую
-        val htmlFile = File("jobs_display.html")
-        if (htmlFile.exists()) {
-            val process = ProcessBuilder("xdg-open", htmlFile.absolutePath).start()
-            println("✅ Веб-страница открыта в браузере напрямую!")
-        }
+        println("⚠️ Попробуйте запустить приложение снова или проверьте, не занят ли порт")
     }
 }
 

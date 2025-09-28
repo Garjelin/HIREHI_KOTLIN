@@ -155,6 +155,13 @@ class HireHiScraperStandalone {
             job.getString("requirements_details")
         } else null
         
+        // Используем оригинальную ссылку из API, если она есть
+        val url = if (job.has("link") && !job.isNull("link")) {
+            job.getString("link")
+        } else {
+            generateJobUrl(id)
+        }
+        
         return JobData(
             id = id,
             title = title,
@@ -162,7 +169,7 @@ class HireHiScraperStandalone {
             salary = salary,
             level = level,
             format = format,
-            url = generateJobUrl(id),
+            url = url,
             description = description,
             requirements = requirements
         )
