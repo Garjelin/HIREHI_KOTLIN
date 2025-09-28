@@ -1,11 +1,9 @@
 package com.hirehi
 
-import com.hirehi.data.local.JobLocalDataSource
 import com.hirehi.data.remote.HireHiScraper
 import com.hirehi.data.repository.JobRepositoryImpl
 import com.hirehi.domain.model.JobSearchParams
 import com.hirehi.domain.usecase.GetJobsUseCase
-import com.hirehi.domain.usecase.RefreshJobsUseCase
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.html.*
@@ -26,19 +24,23 @@ fun main() {
     runBlocking {
         println("🚀 Запуск HireHi веб-приложения...")
 
-        // Сначала запускаем standalone скрипт для получения данных
+        // Получаем данные используя Clean Architecture
         println("📡 Получение данных с hirehi.ru...")
-        val scraper = HireHiScraperStandalone()
-        val keywords = listOf("Kotlin", "Android")
+        val scraper = HireHiScraper()
+        val repository = JobRepositoryImpl(scraper)
+        val getJobsUseCase = GetJobsUseCase(repository)
+        
+        val searchParams = JobSearchParams(
+            keywords = listOf("Kotlin", "Android")
+        )
 
         try {
-            val allJobs = scraper.getAllJobs()
-            if (allJobs.isNotEmpty()) {
-                val filteredJobs = scraper.filterJobsByKeywords(allJobs, keywords)
-                scraper.saveToJson(filteredJobs, "hirehi_filtered_jobs.json")
-                println("✅ Получено ${filteredJobs.size} отфильтрованных вакансий")
+            val jobs = getJobsUseCase(searchParams)
+            if (jobs.isNotEmpty()) {
+                saveJobsToJson(jobs, "hirehi_filtered_jobs.json")
+                println("✅ Получено ${jobs.size} отфильтрованных вакансий")
             } else {
-                println("⚠️ Не удалось получить вакансии, используем mock данные")
+                println("⚠️ Не удалось получить вакансии")
             }
         } catch (e: Exception) {
             println("❌ Ошибка при получении данных: ${e.message}")
@@ -96,6 +98,36 @@ fun Application.configureApplication() {
             )
             call.respond(status)
         }
+    }
+}
+
+private fun saveJobsToJson(jobs: List<com.hirehi.domain.model.Job>, filename: String) {
+    try {
+        val jsonArray = org.json.JSONArray()
+        
+        jobs.forEach { job ->
+            val jobJson = org.json.JSONObject()
+            jobJson.put("id", job.id)
+            jobJson.put("title", job.title)
+            jobJson.put("company", job.company)
+            jobJson.put("salary", job.salary)
+            jobJson.put("level", job.level)
+            jobJson.put("format", job.format)
+            jobJson.put("url", job.url)
+            jobJson.put("description", job.description)
+            jobJson.put("requirements", job.requirements.joinToString(" "))
+            jsonArray.put(jobJson)
+        }
+        
+        val result = org.json.JSONObject()
+        result.put("jobs", jsonArray)
+        result.put("total", jobs.size)
+        result.put("timestamp", java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME))
+        
+        File(filename).writeText(result.toString(2), Charsets.UTF_8)
+        println("Данные сохранены в файл: $filename")
+    } catch (e: Exception) {
+        println("Ошибка при сохранении в файл $filename: ${e.message}")
     }
 }
 

@@ -10,27 +10,80 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import org.json.JSONObject
 import org.json.JSONArray
-import java.net.URLEncoder
-import java.nio.charset.StandardCharsets
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 class HireHiScraper : JobScraper {
-    
+
     private val baseUrl = "https://hirehi.ru"
-    private val userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+    private val apiUrl = "$baseUrl/api/search/jobs"
     private val httpClient = HttpClient(CIO) {
         expectSuccess = false
     }
     
+    private val userAgent = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+
     override suspend fun scrapeJobs(params: JobSearchParams): List<Job> {
-        println("=== HireHiScraper.scrapeJobs called ===")
-        val jobs = mutableListOf<Job>()
+        val allJobs = getAllJobs()
+        return filterJobsByKeywords(allJobs, params.keywords)
+    }
+
+    suspend fun getAllJobs(): List<Job> {
+        val allJobs = mutableListOf<Job>()
+        var page = 1
+        val limit = 27
+
+        while (true) {
+            val data = getJobsPage(page, limit)
+            if (data == null) {
+                println("Не удалось получить данные для страницы $page")
+                break
+            }
+
+            val jobs = data.optJSONArray("jobs")
+            if (jobs == null || jobs.length() == 0) {
+                println("Страница $page пуста, завершаем сбор данных")
+                break
+            }
+
+            for (i in 0 until jobs.length()) {
+                val jobJson = jobs.getJSONObject(i)
+                val job = parseJobFromJson(jobJson)
+                if (job != null) {
+                    allJobs.add(job)
+                }
+            }
+            
+            println("Всего собрано вакансий: ${allJobs.size}")
+            
+            val hasMore = data.optBoolean("has_more", false)
+            if (!hasMore) {
+                println("Достигнута последняя страница: $page")
+                break
+            }
+            
+            page++
+            kotlinx.coroutines.delay(1000) // Небольшая пауза между запросами
+        }
         
-        try {
-            // Используем API endpoint как в Python скрипте
-            val apiUrl = "$baseUrl/api/search/jobs"
-            
-            println("Requesting API: $apiUrl with filters: category=${params.category}, format=${params.format}, level=${params.levels}, subcategory=${params.subcategory}")
-            
+        return allJobs
+    }
+
+    fun filterJobsByKeywords(jobs: List<Job>, keywords: List<String>): List<Job> {
+        if (keywords.isEmpty()) return jobs
+        
+        return jobs.filter { job ->
+            val searchText = "${job.title} ${job.company} ${job.description ?: ""} ${job.requirements.joinToString(" ")}".lowercase()
+            keywords.any { keyword ->
+                searchText.contains(keyword.lowercase())
+            }
+        }
+    }
+
+    private suspend fun getJobsPage(page: Int = 1, limit: Int = 27): JSONObject? {
+        println("Запрашиваем страницу $page с лимитом $limit")
+        
+        return try {
             val response = httpClient.get(apiUrl) {
                 headers {
                     append(HttpHeaders.UserAgent, userAgent)
@@ -39,105 +92,45 @@ class HireHiScraper : JobScraper {
                     append(HttpHeaders.Referrer, "$baseUrl/")
                 }
                 url {
-                    parameters.append("page", "1")
-                    parameters.append("limit", "27")
+                    parameters.append("page", page.toString())
+                    parameters.append("limit", limit.toString())
                     parameters.append("sort", "date")
-                    parameters.append("category", params.category)
-                    parameters.append("format", params.format)
-                    // Передаем каждый уровень отдельно
-                    params.levels.forEach { level ->
-                        parameters.append("level", level)
-                    }
-                    parameters.append("subcategory", params.subcategory)
+                    parameters.append("category", "qa")
+                    parameters.append("format", "удалённо")
+                    parameters.append("level", "senior")
+                    parameters.append("level", "middle")
+                    parameters.append("subcategory", "auto")
                 }
             }
-            
+
             println("API response status: ${response.status}")
-            val jsonText = response.bodyAsText()
-            println("API response received, content length: ${jsonText.length}")
-            
-            // Парсим JSON ответ
-            val jsonObject = JSONObject(jsonText)
+            val responseText = response.bodyAsText()
+            println("Response content length: ${responseText.length}")
+
+            val jsonObject = JSONObject(responseText)
             val jobsArray = jsonObject.getJSONArray("jobs")
-            
-            println("Found ${jobsArray.length()} jobs in API response")
-            
-            for (i in 0 until jobsArray.length()) {
-                try {
-                    val jobJson = jobsArray.getJSONObject(i)
-                    val job = parseJobFromJson(jobJson)
-                    if (job != null && matchesKeywords(job, params.keywords)) {
-                        jobs.add(job)
-                    }
-                } catch (e: Exception) {
-                    println("Error parsing job $i: ${e.message}")
-                }
-            }
-            
-            println("After filtering by keywords: ${jobs.size} jobs")
-            
-            // Если ничего не нашли, создадим тестовые данные
-            if (jobs.isEmpty()) {
-                println("No jobs found from API, creating mock data")
-                jobs.addAll(createMockJobs())
-            }
-            
+            println("Получено ${jobsArray.length()} вакансий на странице $page")
+
+            jsonObject
+
         } catch (e: Exception) {
-            println("Error scraping jobs from API: ${e.message}")
+            println("Ошибка при запросе страницы $page: ${e.message}")
             e.printStackTrace()
-            // В случае ошибки возвращаем тестовые данные
-            jobs.addAll(createMockJobs())
+            null
         }
-        
-        return jobs.distinctBy { it.url }
     }
-    
-    private fun buildSearchUrl(params: JobSearchParams): String {
-        val queryParams = mutableListOf<String>()
-        
-        queryParams.add("category=${URLEncoder.encode(params.category, StandardCharsets.UTF_8)}")
-        queryParams.add("format=${URLEncoder.encode(params.format, StandardCharsets.UTF_8)}")
-        
-        if (params.levels.isNotEmpty()) {
-            params.levels.forEach { level ->
-                queryParams.add("level=${URLEncoder.encode(level, StandardCharsets.UTF_8)}")
-            }
-        }
-        
-        if (params.subcategory.isNotEmpty()) {
-            queryParams.add("subcategory=${URLEncoder.encode(params.subcategory, StandardCharsets.UTF_8)}")
-        }
-        
-        // Добавляем ключевые слова в поиск
-        if (params.keywords.isNotEmpty()) {
-            val searchQuery = params.keywords.joinToString(" OR ")
-            queryParams.add("q=${URLEncoder.encode(searchQuery, StandardCharsets.UTF_8)}")
-        }
-        
-        return "$baseUrl/search?${queryParams.joinToString("&")}"
-    }
-    
-    private fun buildUrlWithParams(baseUrl: String, params: Map<String, String>): String {
-        val queryParams = mutableListOf<String>()
-        
-        params.forEach { (key, value) ->
-            queryParams.add("$key=${URLEncoder.encode(value, StandardCharsets.UTF_8)}")
-        }
-        
-        return "$baseUrl?${queryParams.joinToString("&")}"
-    }
-    
-    private fun parseJobFromJson(jobJson: org.json.JSONObject): Job? {
+
+    private fun parseJobFromJson(jobJson: JSONObject): Job? {
         return try {
-            val id = jobJson.getString("id")
-            val title = jobJson.getString("title")
+            val id = jobJson.optString("id", "unknown")
+            val title = jobJson.optString("title", "Не указано")
             
             // Компания может быть строкой или объектом
             val company = when {
                 jobJson.has("company") && !jobJson.isNull("company") -> {
                     val companyObj = jobJson.get("company")
-                    if (companyObj is org.json.JSONObject) {
-                        companyObj.getString("name")
+                    if (companyObj is JSONObject) {
+                        companyObj.optString("name", "Не указано")
                     } else {
                         companyObj.toString()
                     }
@@ -149,19 +142,22 @@ class HireHiScraper : JobScraper {
                 jobJson.getString("salary")
             } else null
             
-            val level = if (jobJson.has("level") && !jobJson.isNull("level")) {
-                jobJson.getString("level")
-            } else "Не указано"
-            
-            val format = if (jobJson.has("format") && !jobJson.isNull("format")) {
-                jobJson.getString("format")
-            } else "Не указано"
-            
-            val url = generateJobUrl(id)
-            
+            val level = jobJson.optString("level", "Не указано")
+            val format = jobJson.optString("format", "Не указано")
             val description = if (jobJson.has("description_details") && !jobJson.isNull("description_details")) {
                 jobJson.getString("description_details")
             } else null
+            
+            val requirements = if (jobJson.has("requirements_details") && !jobJson.isNull("requirements_details")) {
+                listOf(jobJson.getString("requirements_details"))
+            } else emptyList()
+            
+            // Используем оригинальную ссылку из API, если она есть
+            val url = if (jobJson.has("link") && !jobJson.isNull("link")) {
+                jobJson.getString("link")
+            } else {
+                generateJobUrl(id)
+            }
             
             val publishedAt = if (jobJson.has("created_at") && !jobJson.isNull("created_at")) {
                 jobJson.getString("created_at")
@@ -176,64 +172,20 @@ class HireHiScraper : JobScraper {
                 format = format,
                 url = url,
                 description = description,
+                requirements = requirements,
                 publishedAt = publishedAt
             )
         } catch (e: Exception) {
-            println("Error parsing job from JSON: ${e.message}")
+            println("Ошибка при парсинге вакансии: ${e.message}")
             null
         }
     }
-    
+
     private fun generateJobUrl(jobId: String): String {
         return "$baseUrl/qa/qa-testirovshchik-auto-$jobId"
     }
-    
-    
-    
-    private fun matchesKeywords(job: Job, keywords: List<String>): Boolean {
-        if (keywords.isEmpty()) return true
-        
-        val searchText = "${job.title} ${job.company} ${job.description ?: ""}".lowercase()
-        return keywords.any { keyword ->
-            searchText.contains(keyword.lowercase())
-        }
-    }
-    
-    private fun createMockJobs(): List<Job> {
-        return listOf(
-            Job(
-                id = "mock-1",
-                title = "QA Engineer (Kotlin/Android)",
-                company = "ТехКомпания",
-                salary = "от 150 000 ₽",
-                level = "middle",
-                format = "удалённо",
-                url = "https://example.com/job1",
-                description = "Ищем QA инженера для работы с мобильными приложениями на Kotlin и Android",
-                publishedAt = java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME)
-            ),
-            Job(
-                id = "mock-2", 
-                title = "Senior QA Automation (Kotlin)",
-                company = "Стартап",
-                salary = "от 200 000 ₽",
-                level = "senior",
-                format = "удалённо",
-                url = "https://example.com/job2",
-                description = "Опытный QA для автоматизации тестирования на Kotlin",
-                publishedAt = java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME)
-            ),
-            Job(
-                id = "mock-3",
-                title = "QA Mobile (Android/Kotlin)",
-                company = "Мобильная компания",
-                salary = "от 180 000 ₽",
-                level = "middle",
-                format = "гибрид",
-                url = "https://example.com/job3",
-                description = "Тестирование мобильных приложений на Android с использованием Kotlin",
-                publishedAt = java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME)
-            )
-        )
+
+    fun close() {
+        httpClient.close()
     }
 }

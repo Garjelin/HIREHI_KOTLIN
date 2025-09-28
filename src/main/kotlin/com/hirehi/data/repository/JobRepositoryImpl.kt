@@ -1,73 +1,33 @@
 package com.hirehi.data.repository
 
-import com.hirehi.data.local.JobLocalDataSource
+import com.hirehi.data.remote.HireHiScraper
 import com.hirehi.domain.model.Job
 import com.hirehi.domain.model.JobSearchParams
 import com.hirehi.domain.repository.JobRepository
 import com.hirehi.domain.repository.JobScraper
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 
 class JobRepositoryImpl(
-    private val scraper: JobScraper,
-    private val localDataSource: JobLocalDataSource
+    private val scraper: JobScraper
 ) : JobRepository {
-    
+
     override suspend fun getJobs(params: JobSearchParams): List<Job> {
-        println("=== JobRepositoryImpl.getJobs called ===")
-        val cachedJobs = localDataSource.getJobs()
-        println("Cached jobs count: ${cachedJobs.size}")
-        
-        // Если кэш пустой или устарел (старше 1 часа), обновляем данные
-        val lastUpdate = localDataSource.getLastUpdateTime()
-        val shouldRefresh = cachedJobs.isEmpty() || isCacheExpired(lastUpdate)
-        println("Should refresh: $shouldRefresh, lastUpdate: $lastUpdate")
-        
-        return if (shouldRefresh) {
-            println("Refreshing jobs...")
-            refreshJobs(params)
-        } else {
-            println("Using cached jobs")
-            cachedJobs
-        }
+        return scraper.scrapeJobs(params)
     }
-    
+
     override suspend fun refreshJobs(params: JobSearchParams): List<Job> {
-        return try {
-            val jobs = scraper.scrapeJobs(params)
-            localDataSource.saveJobs(jobs)
-            localDataSource.updateLastUpdateTime()
-            jobs
-        } catch (e: Exception) {
-            println("Error refreshing jobs: ${e.message}")
-            // Возвращаем кэшированные данные в случае ошибки
-            localDataSource.getJobs()
-        }
+        return scraper.scrapeJobs(params)
     }
-    
+
     override suspend fun getCachedJobs(): List<Job> {
-        return localDataSource.getJobs()
+        // В данной реализации кэширование не используется
+        return emptyList()
     }
-    
+
     override suspend fun saveJobs(jobs: List<Job>) {
-        localDataSource.saveJobs(jobs)
-        localDataSource.updateLastUpdateTime()
+        // В данной реализации сохранение не используется
     }
-    
+
     override suspend fun getLastUpdateTime(): String? {
-        return localDataSource.getLastUpdateTime()
-    }
-    
-    private fun isCacheExpired(lastUpdate: String?): Boolean {
-        if (lastUpdate == null) return true
-        
-        return try {
-            val lastUpdateTime = LocalDateTime.parse(lastUpdate, DateTimeFormatter.ISO_LOCAL_DATE_TIME)
-            val now = LocalDateTime.now()
-            val hoursDiff = java.time.Duration.between(lastUpdateTime, now).toHours()
-            hoursDiff >= 1 // Кэш истекает через 1 час
-        } catch (e: Exception) {
-            true // Если не можем распарсить время, считаем кэш устаревшим
-        }
+        return null
     }
 }
