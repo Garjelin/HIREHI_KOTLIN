@@ -107,7 +107,8 @@ private fun loadJobsFromJson(): List<com.hirehi.domain.model.Job> {
         }
         
         val jsonText = jsonFile.readText()
-        val jsonArray = JSONArray(jsonText)
+        val jsonObject = JSONObject(jsonText)
+        val jsonArray = jsonObject.getJSONArray("jobs")
         val jobs = mutableListOf<com.hirehi.domain.model.Job>()
         
         for (i in 0 until jsonArray.length()) {
@@ -128,7 +129,7 @@ private fun loadJobsFromJson(): List<com.hirehi.domain.model.Job> {
 
 private fun parseJobFromJson(jobJson: JSONObject): com.hirehi.domain.model.Job? {
     return try {
-        val id = jobJson.getString("id")
+        val id = jobJson.get("id").toString()
         val title = jobJson.getString("title")
         
         val company = if (jobJson.has("company") && !jobJson.isNull("company")) {
@@ -269,18 +270,20 @@ private suspend fun startWebServer() {
             configureApplication()
         }
         
-        server.start()
+        // Открываем браузер в отдельном потоке через небольшую задержку
+        Thread {
+            Thread.sleep(2000) // Ждем 2 секунды, чтобы сервер успел запуститься
+            try {
+                val process = ProcessBuilder("xdg-open", "http://localhost:$port").start()
+                println("🌐 Браузер открыт автоматически!")
+            } catch (e: Exception) {
+                println("⚠️ Не удалось открыть браузер автоматически. Откройте http://localhost:$port вручную")
+            }
+        }.start()
+        
         println("✅ Веб-сервер запущен! Откройте http://localhost:$port в браузере")
         
-        // Открываем браузер автоматически
-        try {
-            val process = ProcessBuilder("xdg-open", "http://localhost:$port").start()
-            println("🌐 Браузер открыт автоматически!")
-        } catch (e: Exception) {
-            println("⚠️ Не удалось открыть браузер автоматически. Откройте http://localhost:$port вручную")
-        }
-        
-        // Ждем завершения сервера (блокируем выполнение)
+        // Запускаем сервер и ждем завершения (блокируем выполнение)
         server.start(wait = true)
         
     } catch (e: Exception) {
