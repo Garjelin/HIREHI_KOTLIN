@@ -89,6 +89,34 @@ class WebServer {
                 )
                 call.respond(status)
             }
+
+            post("/api/refresh") {
+                try {
+                    val searchParams = com.hirehi.domain.model.JobSearchParams(
+                        keywords = listOf("Kotlin", "Android")
+                    )
+                    val statistics = jobService.loadAndSaveJobs(searchParams)
+                    val (jobs, _) = jobService.loadJobsFromJson()
+                    val html = jobService.generateHtmlPage(jobs, statistics)
+                    jobService.saveHtmlToFile(html)
+                    
+                    val response = mapOf(
+                        "status" to "success",
+                        "message" to "Data refreshed successfully",
+                        "total_jobs" to statistics.totalJobs,
+                        "filtered_jobs" to statistics.filteredJobs,
+                        "last_updated" to statistics.lastUpdated
+                    )
+                    call.respond(response)
+                } catch (e: Exception) {
+                    val errorResponse = mapOf(
+                        "status" to "error",
+                        "message" to (e.message ?: "Unknown error occurred")
+                    )
+                    call.response.status(io.ktor.http.HttpStatusCode.InternalServerError)
+                    call.respond(errorResponse)
+                }
+            }
         }
     }
 

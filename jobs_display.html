@@ -6,16 +6,16 @@
     <title>QA Вакансии - HireHi (16 из 105)</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%); min-height: 100vh; }
         .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
         .header { background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border-radius: 20px; padding: 30px; margin-bottom: 30px; box-shadow: 0 8px 32px rgba(0,0,0,0.1); }
         .header h1 { color: #2d3748; font-size: 2.5em; margin-bottom: 20px; text-align: center; }
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 20px; }
-        .stat-card { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; padding: 20px; border-radius: 15px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .stat-card { background: #4a5568; color: white; padding: 20px; border-radius: 15px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         .stat-number { font-size: 2em; font-weight: bold; margin-bottom: 5px; }
         .stat-label { font-size: 0.9em; opacity: 0.9; }
         .keywords { display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0; }
-        .keyword-chip { background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%); color: #8b4513; padding: 8px 16px; border-radius: 20px; font-weight: 500; font-size: 0.9em; }
+        .keyword-chip { background: #e2e8f0; color: #2d3748; padding: 8px 16px; border-radius: 20px; font-weight: 500; font-size: 0.9em; }
         .refresh-btn { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 12px 24px; border-radius: 25px; font-size: 1em; cursor: pointer; transition: transform 0.2s; margin: 20px 0; }
         .refresh-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
         .jobs-container { display: grid; gap: 20px; }
@@ -25,9 +25,9 @@
         .job-company { color: #4a5568; font-size: 1.1em; font-weight: 500; margin-bottom: 15px; }
         .job-chips { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
         .chip { padding: 6px 12px; border-radius: 15px; font-size: 0.85em; font-weight: 500; display: flex; align-items: center; gap: 5px; }
-        .chip-salary { background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); color: #8b0000; }
-        .chip-level { background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); color: #006400; }
-        .chip-format { background: linear-gradient(135deg, #d299c2 0%, #fef9d7 100%); color: #4b0082; }
+        .chip-salary { background: #fed7d7; color: #c53030; }
+        .chip-level { background: #c6f6d5; color: #2f855a; }
+        .chip-format { background: #e9d8fd; color: #553c9a; }
         .job-link { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-decoration: none; padding: 12px 24px; border-radius: 25px; font-weight: 500; display: inline-block; transition: transform 0.2s; }
         .job-link:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
         .no-jobs { text-align: center; color: white; font-size: 1.2em; padding: 40px; }
@@ -52,16 +52,16 @@
                     <div class="stat-label">Процент совпадений</div>
                 </div>
             </div>
-            <div class="keywords">
-                <span class="keyword-chip">🔍 Фильтр:</span>
+            <div style="margin: 20px 0;">
+                <span style="color: #4a5568; font-weight: 500; margin-right: 10px;">🔍 Фильтр:</span>
                 <span class="keyword-chip">Kotlin</span>
                 <span class="keyword-chip">Android</span>
             </div>
-            <div style="text-align: center;">
-                <button class="refresh-btn" onclick="location.reload()">🔄 Обновить данные</button>
-            </div>
-            <div style="text-align: center; margin-top: 15px; color: #666; font-size: 0.9em;">
-                🕒 Обновлено: 28.09.2025 15:10 | 🌐 Источник: hirehi.ru
+            <div style="background: #f7fafc; border-radius: 15px; padding: 20px; margin: 20px 0; text-align: center;">
+                <button class="refresh-btn" onclick="refreshData()">🔄 Обновить данные</button>
+                <div style="margin-top: 15px; color: #4a5568; font-size: 0.9em;">
+                    🕒 Обновлено: 28.09.2025 15:27 | 🌐 Источник: hirehi.ru
+                </div>
             </div>
         </div>
         <div class="jobs-container">
@@ -73,7 +73,7 @@
                     <div class="chip chip-level"><span class="emoji">📊</span> senior</div>
                     <div class="chip chip-format"><span class="emoji">🏠</span> удалённо</div>
                 </div>
-                <a href="https://hh.ru/vacancy/125851462" target="_blank" class="job-link">👀 Посмотреть вакансию</a>
+                <a href="https://hh.ru/vacancy/125851462" target="_blank" class="job-link">Посмотреть вакансию</a>
             </div>
             <div class="job-card">
                 <div class="job-title">QA Engineer (auto)</div>
@@ -83,7 +83,7 @@
                     <div class="chip chip-level"><span class="emoji">📊</span> senior</div>
                     <div class="chip chip-format"><span class="emoji">🏠</span> удалённо</div>
                 </div>
-                <a href="https://t.me/V_recruiting" target="_blank" class="job-link">👀 Посмотреть вакансию</a>
+                <a href="https://t.me/V_recruiting" target="_blank" class="job-link">Посмотреть вакансию</a>
             </div>
             <div class="job-card">
                 <div class="job-title">qa engineer (auto)</div>
@@ -93,7 +93,7 @@
                     <div class="chip chip-level"><span class="emoji">📊</span> senior</div>
                     <div class="chip chip-format"><span class="emoji">🏠</span> удалённо</div>
                 </div>
-                <a href="https://magnit.tech/vacancies/2327" target="_blank" class="job-link">👀 Посмотреть вакансию</a>
+                <a href="https://magnit.tech/vacancies/2327" target="_blank" class="job-link">Посмотреть вакансию</a>
             </div>
             <div class="job-card">
                 <div class="job-title">QA Engineer (auto)</div>
@@ -103,7 +103,7 @@
                     <div class="chip chip-level"><span class="emoji">📊</span> senior</div>
                     <div class="chip chip-format"><span class="emoji">🏠</span> удалённо</div>
                 </div>
-                <a href="https://t.me/evgeniyaponomaryova" target="_blank" class="job-link">👀 Посмотреть вакансию</a>
+                <a href="https://t.me/evgeniyaponomaryova" target="_blank" class="job-link">Посмотреть вакансию</a>
             </div>
             <div class="job-card">
                 <div class="job-title">QA Engineer (auto)</div>
@@ -113,7 +113,7 @@
                     <div class="chip chip-level"><span class="emoji">📊</span> senior</div>
                     <div class="chip chip-format"><span class="emoji">🏠</span> удалённо</div>
                 </div>
-                <a href="https://t.me/nadzeya_recruiter" target="_blank" class="job-link">👀 Посмотреть вакансию</a>
+                <a href="https://t.me/nadzeya_recruiter" target="_blank" class="job-link">Посмотреть вакансию</a>
             </div>
             <div class="job-card">
                 <div class="job-title">QA Engineer (auto)</div>
@@ -123,7 +123,7 @@
                     <div class="chip chip-level"><span class="emoji">📊</span> senior</div>
                     <div class="chip chip-format"><span class="emoji">🏠</span> удалённо</div>
                 </div>
-                <a href="https://hh.ru/vacancy/125658288" target="_blank" class="job-link">👀 Посмотреть вакансию</a>
+                <a href="https://hh.ru/vacancy/125658288" target="_blank" class="job-link">Посмотреть вакансию</a>
             </div>
             <div class="job-card">
                 <div class="job-title">QA тестировщик (auto)</div>
@@ -133,7 +133,7 @@
                     <div class="chip chip-level"><span class="emoji">📊</span> middle</div>
                     <div class="chip chip-format"><span class="emoji">🏠</span> удалённо</div>
                 </div>
-                <a href="https://hh.ru/vacancy/125605612" target="_blank" class="job-link">👀 Посмотреть вакансию</a>
+                <a href="https://hh.ru/vacancy/125605612" target="_blank" class="job-link">Посмотреть вакансию</a>
             </div>
             <div class="job-card">
                 <div class="job-title">QA тестировщик (auto)</div>
@@ -143,7 +143,7 @@
                     <div class="chip chip-level"><span class="emoji">📊</span> senior</div>
                     <div class="chip chip-format"><span class="emoji">🏠</span> удалённо</div>
                 </div>
-                <a href="https://t.me/BubenTatiana" target="_blank" class="job-link">👀 Посмотреть вакансию</a>
+                <a href="https://t.me/BubenTatiana" target="_blank" class="job-link">Посмотреть вакансию</a>
             </div>
             <div class="job-card">
                 <div class="job-title">QA тестировщик (auto)</div>
@@ -153,7 +153,7 @@
                     <div class="chip chip-level"><span class="emoji">📊</span> senior</div>
                     <div class="chip chip-format"><span class="emoji">🏠</span> удалённо</div>
                 </div>
-                <a href="https://career.avito.com/vacancies/razrabotka/17352/" target="_blank" class="job-link">👀 Посмотреть вакансию</a>
+                <a href="https://career.avito.com/vacancies/razrabotka/17352/" target="_blank" class="job-link">Посмотреть вакансию</a>
             </div>
             <div class="job-card">
                 <div class="job-title">QA тестировщик (auto)</div>
@@ -163,7 +163,7 @@
                     <div class="chip chip-level"><span class="emoji">📊</span> senior</div>
                     <div class="chip chip-format"><span class="emoji">🏠</span> удалённо</div>
                 </div>
-                <a href="https://hh.ru/vacancy/125396441" target="_blank" class="job-link">👀 Посмотреть вакансию</a>
+                <a href="https://hh.ru/vacancy/125396441" target="_blank" class="job-link">Посмотреть вакансию</a>
             </div>
             <div class="job-card">
                 <div class="job-title">QA тестировщик (auto)</div>
@@ -173,7 +173,7 @@
                     <div class="chip chip-level"><span class="emoji">📊</span> senior</div>
                     <div class="chip chip-format"><span class="emoji">🏠</span> удалённо</div>
                 </div>
-                <a href="https://t.me/chloe_cay" target="_blank" class="job-link">👀 Посмотреть вакансию</a>
+                <a href="https://t.me/chloe_cay" target="_blank" class="job-link">Посмотреть вакансию</a>
             </div>
             <div class="job-card">
                 <div class="job-title">QA тестировщик (auto)</div>
@@ -183,7 +183,7 @@
                     <div class="chip chip-level"><span class="emoji">📊</span> middle</div>
                     <div class="chip chip-format"><span class="emoji">🏠</span> удалённо</div>
                 </div>
-                <a href="https://telegra.ph/QA-Tester-09-14" target="_blank" class="job-link">👀 Посмотреть вакансию</a>
+                <a href="https://telegra.ph/QA-Tester-09-14" target="_blank" class="job-link">Посмотреть вакансию</a>
             </div>
             <div class="job-card">
                 <div class="job-title">QA Engineer (auto)</div>
@@ -193,7 +193,7 @@
                     <div class="chip chip-level"><span class="emoji">📊</span> senior</div>
                     <div class="chip chip-format"><span class="emoji">🏠</span> удалённо</div>
                 </div>
-                <a href="https://hh.ru/vacancy/125391076" target="_blank" class="job-link">👀 Посмотреть вакансию</a>
+                <a href="https://hh.ru/vacancy/125391076" target="_blank" class="job-link">Посмотреть вакансию</a>
             </div>
             <div class="job-card">
                 <div class="job-title">Тестировщик (auto)</div>
@@ -203,7 +203,7 @@
                     <div class="chip chip-level"><span class="emoji">📊</span> senior</div>
                     <div class="chip chip-format"><span class="emoji">🏠</span> удалённо</div>
                 </div>
-                <a href="https://hh.ru/vacancy/125345973" target="_blank" class="job-link">👀 Посмотреть вакансию</a>
+                <a href="https://hh.ru/vacancy/125345973" target="_blank" class="job-link">Посмотреть вакансию</a>
             </div>
             <div class="job-card">
                 <div class="job-title">QA Engineer (auto)</div>
@@ -213,7 +213,7 @@
                     <div class="chip chip-level"><span class="emoji">📊</span> senior</div>
                     <div class="chip chip-format"><span class="emoji">🏠</span> удалённо</div>
                 </div>
-                <a href="https://t.me/ansharkunova" target="_blank" class="job-link">👀 Посмотреть вакансию</a>
+                <a href="https://t.me/ansharkunova" target="_blank" class="job-link">Посмотреть вакансию</a>
             </div>
             <div class="job-card">
                 <div class="job-title">qa engineer (auto)</div>
@@ -223,9 +223,35 @@
                     <div class="chip chip-level"><span class="emoji">📊</span> middle</div>
                     <div class="chip chip-format"><span class="emoji">🏠</span> удалённо</div>
                 </div>
-                <a href="https://t.me/Valeria_Increment" target="_blank" class="job-link">👀 Посмотреть вакансию</a>
+                <a href="https://t.me/Valeria_Increment" target="_blank" class="job-link">Посмотреть вакансию</a>
             </div>
         </div>
     </div>
+    <script>
+        async function refreshData() {
+            const button = document.querySelector('.refresh-btn');
+            const originalText = button.textContent;
+            button.textContent = '⏳ Обновление...';
+            button.disabled = true;
+            
+            try {
+                const response = await fetch('/api/refresh', { method: 'POST' });
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    // Перезагружаем страницу для отображения новых данных
+                    location.reload();
+                } else {
+                    alert('Ошибка при обновлении: ' + data.message);
+                    button.textContent = originalText;
+                    button.disabled = false;
+                }
+            } catch (error) {
+                alert('Ошибка при обновлении: ' + error.message);
+                button.textContent = originalText;
+                button.disabled = false;
+            }
+        }
+    </script>
 </body>
 </html>
