@@ -262,52 +262,10 @@ class HireHiScraperStandalone {
             println("Ошибка при сохранении отфильтрованных данных в файл $filename: ${e.message}")
         }
     }
-}
-
-suspend fun main() {
-    println("Запуск скрапера hirehi.ru")
-    println("Фильтрация по ключевым словам: Kotlin, Android")
     
-    val scraper = HireHiScraperStandalone()
-    val keywords = listOf("Kotlin", "Android")
-    
-    try {
-        // Получаем все вакансии
-        val allJobs = scraper.getAllJobs()
-        
-        if (allJobs.isEmpty()) {
-            println("Не удалось получить ни одной вакансии")
-            return
-        }
-        
-        println("Получено ${allJobs.size} вакансий до фильтрации")
-        
-        // Сохраняем все вакансии в JSON
-        scraper.saveToJson(allJobs, "hirehi_all_jobs.json")
-        
-        // Фильтруем по ключевым словам
-        val filteredJobs = scraper.filterJobsByKeywords(allJobs, keywords)
-        
-        println("После фильтрации по ключевым словам: ${filteredJobs.size} вакансий")
-        
-        if (filteredJobs.isEmpty()) {
-            println("После фильтрации не осталось ни одной вакансии")
-            return
-        }
-        
-        // Выводим информацию в лог
-        scraper.logJobs(filteredJobs)
-        
-        // Сохраняем отфильтрованные данные в JSON
-        scraper.saveFilteredToJson(filteredJobs, "hirehi_filtered_jobs.json")
-        
-        println("Скрапинг завершен успешно!")
-        println("Созданы файлы:")
-        println("- hirehi_all_jobs.json (все вакансии)")
-        println("- hirehi_filtered_jobs.json (отфильтрованные вакансии)")
-        
-    } catch (e: Exception) {
-        println("Критическая ошибка: ${e.message}")
-        e.printStackTrace()
+    fun close() {
+        httpClient.close()
     }
 }
+
+// main() функция перенесена в Main.kt
