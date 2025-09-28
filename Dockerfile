@@ -4,12 +4,8 @@ FROM gradle:8.5-jdk17 AS build
 # Устанавливаем рабочую директорию
 WORKDIR /app
 
-# Копируем файлы конфигурации Gradle
-COPY build.gradle.kts gradle.properties settings.gradle.kts ./
-COPY gradle/ ./gradle/
-
-# Копируем исходный код
-COPY src/ ./src/
+# Копируем все файлы проекта
+COPY . .
 
 # Собираем приложение
 RUN ./gradlew build --no-daemon
