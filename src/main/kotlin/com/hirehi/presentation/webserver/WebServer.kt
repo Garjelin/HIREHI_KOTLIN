@@ -74,15 +74,18 @@ class WebServer {
             }
 
             get("/api/jobs") {
-                val jobs = jobService.loadJobsFromJson()
+                val (jobs, statistics) = jobService.loadJobsFromJson()
                 call.respond(jobs)
             }
 
             get("/api/status") {
+                val (jobs, statistics) = jobService.loadJobsFromJson()
                 val status = mapOf(
                     "status" to "ok",
                     "message" to "HireHi API is running",
-                    "jobs_count" to jobService.loadJobsFromJson().size
+                    "jobs_count" to jobs.size,
+                    "total_jobs" to (statistics?.totalJobs ?: jobs.size),
+                    "filtered_jobs" to (statistics?.filteredJobs ?: jobs.size)
                 )
                 call.respond(status)
             }

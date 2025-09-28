@@ -4,9 +4,12 @@ import com.hirehi.data.remote.HireHiScraper
 import com.hirehi.data.repository.JobRepositoryImpl
 import com.hirehi.domain.model.Job
 import com.hirehi.domain.model.JobSearchParams
+import com.hirehi.domain.model.JobStatistics
 import com.hirehi.domain.usecase.GetJobsUseCase
 import com.hirehi.presentation.view.JobView
 import java.io.File
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 class JobService {
     
@@ -15,26 +18,41 @@ class JobService {
     private val getJobsUseCase = GetJobsUseCase(repository)
     private val jobView = JobView()
 
-    suspend fun loadAndSaveJobs(searchParams: JobSearchParams): List<Job> {
-        val jobs = getJobsUseCase(searchParams)
-        saveJobsToJson(jobs, "hirehi_filtered_jobs.json")
-        return jobs
+    suspend fun loadAndSaveJobs(searchParams: JobSearchParams): JobStatistics {
+        // Получаем все вакансии
+        val allJobs = scraper.getAllJobs()
+        val totalJobs = allJobs.size
+        
+        // Фильтруем по ключевым словам
+        val filteredJobs = scraper.filterJobsByKeywords(allJobs, searchParams.keywords)
+        
+        // Создаем статистику
+        val statistics = JobStatistics(
+            totalJobs = totalJobs,
+            filteredJobs = filteredJobs.size,
+            lastUpdated = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
+            keywords = searchParams.keywords
+        )
+        
+        // Сохраняем отфильтрованные вакансии и статистику
+        saveJobsToJson(filteredJobs, statistics, "hirehi_filtered_jobs.json")
+        return statistics
     }
 
-    fun generateHtmlPage(jobs: List<Job>): String {
-        return jobView.generateHtmlPage(jobs)
+    fun generateHtmlPage(jobs: List<Job>, statistics: JobStatistics? = null): String {
+        return jobView.generateHtmlPage(jobs, statistics)
     }
 
     fun saveHtmlToFile(html: String, filename: String = "jobs_display.html") {
         File(filename).writeText(html, Charsets.UTF_8)
     }
 
-    fun loadJobsFromJson(): List<Job> {
+    fun loadJobsFromJson(): Pair<List<Job>, JobStatistics?> {
         return try {
             val jsonFile = File("hirehi_filtered_jobs.json")
             if (!jsonFile.exists()) {
                 println("⚠️ JSON файл не найден, возвращаем пустой список")
-                return emptyList()
+                return Pair(emptyList(), null)
             }
 
             val jsonText = jsonFile.readText()
@@ -50,11 +68,24 @@ class JobService {
                 }
             }
 
+            // Загружаем статистику
+            val statistics = if (jsonObject.has("statistics")) {
+                val statsJson = jsonObject.getJSONObject("statistics")
+                JobStatistics(
+                    totalJobs = statsJson.getInt("totalJobs"),
+                    filteredJobs = statsJson.getInt("filteredJobs"),
+                    lastUpdated = statsJson.getString("lastUpdated"),
+                    keywords = statsJson.getJSONArray("keywords").let { array ->
+                        (0 until array.length()).map { array.getString(it) }
+                    }
+                )
+            } else null
+
             println("📊 Загружено ${jobs.size} вакансий из JSON файла")
-            jobs
+            Pair(jobs, statistics)
         } catch (e: Exception) {
             println("❌ Ошибка при загрузке JSON: ${e.message}")
-            emptyList()
+            Pair(emptyList(), null)
         }
     }
 
@@ -105,7 +136,7 @@ class JobService {
         }
     }
 
-    private fun saveJobsToJson(jobs: List<Job>, filename: String) {
+    private fun saveJobsToJson(jobs: List<Job>, statistics: JobStatistics, filename: String) {
         try {
             val jsonArray = org.json.JSONArray()
             
@@ -126,7 +157,17 @@ class JobService {
             val result = org.json.JSONObject()
             result.put("jobs", jsonArray)
             result.put("total", jobs.size)
-            result.put("timestamp", java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME))
+            result.put("timestamp", statistics.lastUpdated)
+            
+            // Добавляем статистику
+            val statsJson = org.json.JSONObject()
+            statsJson.put("totalJobs", statistics.totalJobs)
+            statsJson.put("filteredJobs", statistics.filteredJobs)
+            statsJson.put("lastUpdated", statistics.lastUpdated)
+            val keywordsArray = org.json.JSONArray()
+            statistics.keywords.forEach { keywordsArray.put(it) }
+            statsJson.put("keywords", keywordsArray)
+            result.put("statistics", statsJson)
             
             File(filename).writeText(result.toString(2), Charsets.UTF_8)
             println("Данные сохранены в файл: $filename")

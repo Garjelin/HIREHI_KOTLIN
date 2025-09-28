@@ -19,23 +19,19 @@ class HireHiApplication {
                 keywords = listOf("Kotlin", "Android")
             )
 
-            try {
-                val jobs = jobService.loadAndSaveJobs(searchParams)
-                if (jobs.isNotEmpty()) {
-                    println("✅ Получено ${jobs.size} отфильтрованных вакансий")
-                } else {
-                    println("⚠️ Не удалось получить вакансии")
-                }
-            } catch (e: Exception) {
-                println("❌ Ошибка при получении данных: ${e.message}")
-            }
-            
-            // Генерируем HTML страницу с встроенными данными
-            println("🌐 Генерируем HTML страницу с результатами...")
-            val jobs = jobService.loadJobsFromJson()
-            val html = jobService.generateHtmlPage(jobs)
-            jobService.saveHtmlToFile(html)
-            println("✅ HTML страница сгенерирована с ${jobs.size} вакансиями")
+        try {
+            val statistics = jobService.loadAndSaveJobs(searchParams)
+            println("✅ Получено ${statistics.filteredJobs} отфильтрованных вакансий из ${statistics.totalJobs} общих")
+        } catch (e: Exception) {
+            println("❌ Ошибка при получении данных: ${e.message}")
+        }
+        
+        // Генерируем HTML страницу с встроенными данными
+        println("🌐 Генерируем HTML страницу с результатами...")
+        val (jobs, statistics) = jobService.loadJobsFromJson()
+        val html = jobService.generateHtmlPage(jobs, statistics)
+        jobService.saveHtmlToFile(html)
+        println("✅ HTML страница сгенерирована с ${jobs.size} вакансиями")
             
             // Закрываем ресурсы
             jobService.close()
