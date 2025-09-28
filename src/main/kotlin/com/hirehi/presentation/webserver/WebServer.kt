@@ -95,26 +95,28 @@ class WebServer {
                     val searchParams = com.hirehi.domain.model.JobSearchParams(
                         keywords = listOf("Kotlin", "Android")
                     )
-                    val statistics = jobService.loadAndSaveJobs(searchParams)
+                    val statistics = kotlinx.coroutines.runBlocking {
+                        jobService.loadAndSaveJobs(searchParams)
+                    }
                     val (jobs, _) = jobService.loadJobsFromJson()
                     val html = jobService.generateHtmlPage(jobs, statistics)
                     jobService.saveHtmlToFile(html)
                     
-                    val response = mapOf(
-                        "status" to "success",
-                        "message" to "Data refreshed successfully",
-                        "total_jobs" to statistics.totalJobs,
-                        "filtered_jobs" to statistics.filteredJobs,
-                        "last_updated" to statistics.lastUpdated
-                    )
-                    call.respond(response)
+                    val response = org.json.JSONObject().apply {
+                        put("status", "success")
+                        put("message", "Data refreshed successfully")
+                        put("total_jobs", statistics.totalJobs)
+                        put("filtered_jobs", statistics.filteredJobs)
+                        put("last_updated", statistics.lastUpdated)
+                    }
+                    call.respondText(response.toString(), io.ktor.http.ContentType.Application.Json)
                 } catch (e: Exception) {
-                    val errorResponse = mapOf(
-                        "status" to "error",
-                        "message" to (e.message ?: "Unknown error occurred")
-                    )
+                    val errorResponse = org.json.JSONObject().apply {
+                        put("status", "error")
+                        put("message", e.message ?: "Unknown error occurred")
+                    }
                     call.response.status(io.ktor.http.HttpStatusCode.InternalServerError)
-                    call.respond(errorResponse)
+                    call.respondText(errorResponse.toString(), io.ktor.http.ContentType.Application.Json)
                 }
             }
         }

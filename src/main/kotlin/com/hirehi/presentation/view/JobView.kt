@@ -26,7 +26,7 @@ class JobView {
             appendLine("    <title>QA Вакансии - HireHi ($filteredJobs из $totalJobs)</title>")
             appendLine("    <style>")
             appendLine("        * { margin: 0; padding: 0; box-sizing: border-box; }")
-            appendLine("        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%); min-height: 100vh; }")
+            appendLine("        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }")
             appendLine("        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }")
             appendLine("        .header { background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border-radius: 20px; padding: 30px; margin-bottom: 30px; box-shadow: 0 8px 32px rgba(0,0,0,0.1); }")
             appendLine("        .header h1 { color: #2d3748; font-size: 2.5em; margin-bottom: 20px; text-align: center; }")
