@@ -29,25 +29,26 @@ class HireHiScraper : JobScraper {
             // Используем API endpoint как в Python скрипте
             val apiUrl = "$baseUrl/api/search/jobs"
             
-            val queryParams = mapOf(
-                "page" to "1",
-                "limit" to "27",
-                "sort" to "date",
-                "category" to params.category,
-                "format" to params.format,
-                "level" to params.levels.joinToString(","),
-                "subcategory" to params.subcategory
-            )
+            println("Requesting API: $apiUrl with filters: category=${params.category}, format=${params.format}, level=${params.levels}, subcategory=${params.subcategory}")
             
-            val url = buildUrlWithParams(apiUrl, queryParams)
-            println("Requesting API: $url")
-            
-            val response = httpClient.get(url) {
+            val response = httpClient.get(apiUrl) {
                 headers {
                     append(HttpHeaders.UserAgent, userAgent)
                     append(HttpHeaders.Accept, "application/json, text/plain, */*")
                     append(HttpHeaders.AcceptLanguage, "ru-RU,ru;q=0.9,en;q=0.8")
                     append(HttpHeaders.Referrer, "$baseUrl/")
+                }
+                url {
+                    parameters.append("page", "1")
+                    parameters.append("limit", "27")
+                    parameters.append("sort", "date")
+                    parameters.append("category", params.category)
+                    parameters.append("format", params.format)
+                    // Передаем каждый уровень отдельно
+                    params.levels.forEach { level ->
+                        parameters.append("level", level)
+                    }
+                    parameters.append("subcategory", params.subcategory)
                 }
             }
             
