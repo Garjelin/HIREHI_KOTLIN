@@ -25,12 +25,12 @@ import org.json.JSONArray
 fun main() {
     runBlocking {
         println("🚀 Запуск HireHi веб-приложения...")
-        
+
         // Сначала запускаем standalone скрипт для получения данных
         println("📡 Получение данных с hirehi.ru...")
         val scraper = HireHiScraperStandalone()
         val keywords = listOf("Kotlin", "Android")
-        
+
         try {
             val allJobs = scraper.getAllJobs()
             if (allJobs.isNotEmpty()) {
@@ -50,14 +50,9 @@ fun main() {
         println("🌐 Генерируем HTML страницу с результатами...")
         generateHtmlPage()
         
-        // Открываем HTML страницу
-        val htmlFile = File("jobs_display.html")
-        if (htmlFile.exists()) {
-            val process = ProcessBuilder("xdg-open", htmlFile.absolutePath).start()
-            println("✅ Веб-страница открыта в браузере!")
-        } else {
-            println("❌ HTML файл не найден: ${htmlFile.absolutePath}")
-        }
+        // Запускаем веб-сервер
+        println("🌐 Запуск веб-сервера...")
+        startWebServer()
     }
 }
 
@@ -262,6 +257,40 @@ private fun generateHtmlPage() {
         
     } catch (e: Exception) {
         println("❌ Ошибка при генерации HTML: ${e.message}")
+    }
+}
+
+private suspend fun startWebServer() {
+    try {
+        val port = getPort()
+        println("🌐 Запуск веб-сервера на порту $port...")
+        
+        val server = embeddedServer(Netty, port = port) {
+            configureApplication()
+        }
+        
+        server.start()
+        println("✅ Веб-сервер запущен! Откройте http://localhost:$port в браузере")
+        
+        // Открываем браузер автоматически
+        try {
+            val process = ProcessBuilder("xdg-open", "http://localhost:$port").start()
+            println("🌐 Браузер открыт автоматически!")
+        } catch (e: Exception) {
+            println("⚠️ Не удалось открыть браузер автоматически. Откройте http://localhost:$port вручную")
+        }
+        
+        // Ждем завершения сервера (блокируем выполнение)
+        server.start(wait = true)
+        
+    } catch (e: Exception) {
+        println("❌ Ошибка при запуске веб-сервера: ${e.message}")
+        // Если сервер не запустился, открываем HTML файл напрямую
+        val htmlFile = File("jobs_display.html")
+        if (htmlFile.exists()) {
+            val process = ProcessBuilder("xdg-open", htmlFile.absolutePath).start()
+            println("✅ Веб-страница открыта в браузере напрямую!")
+        }
     }
 }
 
