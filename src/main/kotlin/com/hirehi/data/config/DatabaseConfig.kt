@@ -52,6 +52,11 @@ object DatabaseConfig {
             connectionTimeout = 30000
             idleTimeout = 600000
             maxLifetime = 1800000
+            
+            // Отключаем prepared statements для совместимости с Supabase pooler
+            addDataSourceProperty("prepareThreshold", "0")
+            addDataSourceProperty("preparedStatementCacheQueries", "0")
+            addDataSourceProperty("preparedStatementCacheSizeMiB", "0")
         }
         
         dataSource = HikariDataSource(config)

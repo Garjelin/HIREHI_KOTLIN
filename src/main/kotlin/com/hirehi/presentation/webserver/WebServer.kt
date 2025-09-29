@@ -3,6 +3,8 @@ package com.hirehi.presentation.webserver
 import com.hirehi.data.config.DatabaseConfig
 import com.hirehi.data.repository.ArchiveRepositoryImpl
 import com.hirehi.domain.model.ArchivedJobs
+import com.hirehi.domain.model.ArchiveRequest
+import com.hirehi.domain.model.ArchiveResponse
 import com.hirehi.domain.usecase.ArchiveJobUseCase
 import com.hirehi.domain.usecase.GetArchivedJobsUseCase
 import com.hirehi.presentation.service.JobService
@@ -153,11 +155,9 @@ class WebServer {
                 }
                 
                 try {
-                    val request = call.receive<Map<String, Any>>()
-                    val jobId = request["jobId"] as? String
-                    val reason = request["reason"] as? String
+                    val request = call.receive<ArchiveRequest>()
                     
-                    if (jobId == null) {
+                    if (request.jobId.isBlank()) {
                         call.response.status(HttpStatusCode.BadRequest)
                         call.respond(mapOf("error" to "jobId is required"))
                         return@post
@@ -165,7 +165,7 @@ class WebServer {
                     
                     // Найти вакансию в текущих данных
                     val (jobs, _) = jobService.loadJobsFromJson()
-                    val job = jobs.find { it.id == jobId }
+                    val job = jobs.find { it.id == request.jobId }
                     
                     if (job == null) {
                         call.response.status(HttpStatusCode.NotFound)
@@ -174,7 +174,7 @@ class WebServer {
                     }
                     
                     val success = kotlinx.coroutines.runBlocking {
-                        archiveJobUseCase.execute(job, reason)
+                        archiveJobUseCase.execute(job, request.reason)
                     }
                     
                     if (success) {
@@ -204,11 +204,11 @@ class WebServer {
                         getArchivedJobsUseCase.execute(limit, offset)
                     }
                     
-                    call.respond(mapOf<String, Any>(
-                        "jobs" to archivedJobs,
-                        "total" to archivedJobs.size,
-                        "limit" to limit,
-                        "offset" to offset
+                    call.respond(ArchiveResponse(
+                        jobs = archivedJobs,
+                        total = archivedJobs.size,
+                        limit = limit,
+                        offset = offset
                     ))
                 } catch (e: Exception) {
                     call.response.status(HttpStatusCode.InternalServerError)
