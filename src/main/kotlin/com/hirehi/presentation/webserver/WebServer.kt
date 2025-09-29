@@ -146,6 +146,12 @@ class WebServer {
 
             // Archive endpoints
             post("/api/archive") {
+                if (!DatabaseConfig.isDatabaseAvailable()) {
+                    call.response.status(HttpStatusCode.ServiceUnavailable)
+                    call.respond(mapOf<String, String>("error" to "Database not available"))
+                    return@post
+                }
+                
                 try {
                     val request = call.receive<Map<String, Any>>()
                     val jobId = request["jobId"] as? String
@@ -184,6 +190,12 @@ class WebServer {
             }
 
             get("/api/archive") {
+                if (!DatabaseConfig.isDatabaseAvailable()) {
+                    call.response.status(HttpStatusCode.ServiceUnavailable)
+                    call.respond(mapOf<String, String>("error" to "Database not available"))
+                    return@get
+                }
+                
                 try {
                     val limit = call.request.queryParameters["limit"]?.toIntOrNull() ?: 100
                     val offset = call.request.queryParameters["offset"]?.toIntOrNull() ?: 0
@@ -205,6 +217,12 @@ class WebServer {
             }
 
             get("/api/archive/statistics") {
+                if (!DatabaseConfig.isDatabaseAvailable()) {
+                    call.response.status(HttpStatusCode.ServiceUnavailable)
+                    call.respond(mapOf<String, String>("error" to "Database not available"))
+                    return@get
+                }
+                
                 try {
                     val statistics = kotlinx.coroutines.runBlocking {
                         archiveRepository.getArchiveStatistics()
@@ -217,6 +235,12 @@ class WebServer {
             }
 
             delete("/api/archive/{id}") {
+                if (!DatabaseConfig.isDatabaseAvailable()) {
+                    call.response.status(HttpStatusCode.ServiceUnavailable)
+                    call.respond(mapOf<String, String>("error" to "Database not available"))
+                    return@delete
+                }
+                
                 try {
                     val jobId = call.parameters["id"]
                     if (jobId == null) {
@@ -244,6 +268,11 @@ class WebServer {
     }
 
     private fun initializeDatabase() {
+        if (!DatabaseConfig.isDatabaseAvailable()) {
+            println("⚠️ База данных недоступна, архивирование отключено")
+            return
+        }
+        
         try {
             transaction {
                 SchemaUtils.create(ArchivedJobs)

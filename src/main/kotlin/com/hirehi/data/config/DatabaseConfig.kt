@@ -2,14 +2,35 @@ package com.hirehi.data.config
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
+import io.github.cdimascio.dotenv.dotenv
 import org.jetbrains.exposed.sql.Database
 import java.net.URI
 
 object DatabaseConfig {
     private var dataSource: HikariDataSource? = null
+    private var isInitialized = false
     
     fun init() {
-        val databaseUrl = System.getenv("DATABASE_URL") ?: "postgresql://localhost:5432/hirehi_dev"
+        // Загружаем переменные окружения из .env файла для локальной разработки
+        val dotenv = try {
+            dotenv {
+                directory = "./"
+                filename = "local.env"
+                ignoreIfMissing = true
+            }
+        } catch (e: Exception) {
+            println("⚠️ Не удалось загрузить local.env файл: ${e.message}")
+            null
+        }
+        
+        // Получаем DATABASE_URL из переменных окружения или .env файла
+        val databaseUrl = System.getenv("DATABASE_URL") ?: dotenv?.get("DATABASE_URL")
+        
+        // Если нет DATABASE_URL, пропускаем инициализацию БД
+        if (databaseUrl == null) {
+            println("⚠️ DATABASE_URL не установлен, работаем без базы данных")
+            return
+        }
         
         val config = HikariConfig().apply {
             // Parse DATABASE_URL if it's a full URL (for production)
@@ -35,6 +56,12 @@ object DatabaseConfig {
         
         dataSource = HikariDataSource(config)
         Database.connect(dataSource!!)
+        isInitialized = true
+        println("✅ База данных подключена")
+    }
+    
+    fun isDatabaseAvailable(): Boolean {
+        return isInitialized && dataSource != null
     }
     
     fun close() {

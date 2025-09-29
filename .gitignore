@@ -30,6 +30,10 @@ hirehi_jobs.json
 last_update.txt
 *.log
 
+# Environment files with sensitive data
+local.env
+.env
+
 # Temporary files
 *.tmp
 *.temp

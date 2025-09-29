@@ -43,6 +43,9 @@ dependencies {
     implementation("org.postgresql:postgresql:42.7.2")
     implementation("com.zaxxer:HikariCP:5.1.0")
     
+    // Environment variables
+    implementation("io.github.cdimascio:dotenv-kotlin:6.4.1")
+    
     // Logging
     implementation("ch.qos.logback:logback-classic:1.4.14")
     

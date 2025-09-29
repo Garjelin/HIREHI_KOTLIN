@@ -1,6 +1,7 @@
 package com.hirehi.domain.repository
 
 import com.hirehi.domain.model.ArchivedJob
+import kotlinx.serialization.Serializable
 
 interface ArchiveRepository {
     suspend fun archiveJob(job: com.hirehi.domain.model.Job, reason: String? = null): Boolean
@@ -10,12 +11,14 @@ interface ArchiveRepository {
     suspend fun getArchiveStatistics(): ArchiveStatistics
 }
 
+@Serializable
 data class ArchiveStatistics(
     val totalArchived: Int,
     val archivedThisMonth: Int,
     val mostArchivedCompanies: List<CompanyArchiveCount>
 )
 
+@Serializable
 data class CompanyArchiveCount(
     val company: String,
     val count: Int
