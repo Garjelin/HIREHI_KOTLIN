@@ -82,11 +82,30 @@ class WebServer {
         // Настройка маршрутов
         routing {
             get("/") {
-                val htmlFile = File("jobs_display.html")
-                if (htmlFile.exists()) {
-                    call.respondText(htmlFile.readText(), ContentType.Text.Html)
-                } else {
-                    call.respondText("HTML файл не найден.", ContentType.Text.Plain)
+                try {
+                    // Загружаем вакансии исключая архивированные
+                    val (jobs, statistics) = if (DatabaseConfig.isDatabaseAvailable()) {
+                        kotlinx.coroutines.runBlocking {
+                            jobService.loadJobsFromJsonExcludingArchived()
+                        }
+                    } else {
+                        jobService.loadJobsFromJson()
+                    }
+                    
+                    // Генерируем HTML с актуальными данными
+                    val html = kotlinx.coroutines.runBlocking {
+                        jobService.generateHtmlPage(jobs, statistics)
+                    }
+                    call.respondText(html, ContentType.Text.Html)
+                } catch (e: Exception) {
+                    println("❌ Ошибка при генерации главной страницы: ${e.message}")
+                    // Fallback к статическому файлу
+                    val htmlFile = File("jobs_display.html")
+                    if (htmlFile.exists()) {
+                        call.respondText(htmlFile.readText(), ContentType.Text.Html)
+                    } else {
+                        call.respondText("HTML файл не найден.", ContentType.Text.Plain)
+                    }
                 }
             }
 
@@ -109,7 +128,13 @@ class WebServer {
             }
 
             get("/api/jobs") {
-                val (jobs, statistics) = jobService.loadJobsFromJson()
+                val (jobs, statistics) = if (DatabaseConfig.isDatabaseAvailable()) {
+                    kotlinx.coroutines.runBlocking {
+                        jobService.loadJobsFromJsonExcludingArchived()
+                    }
+                } else {
+                    jobService.loadJobsFromJson()
+                }
                 call.respond(jobs)
             }
 
@@ -130,12 +155,20 @@ class WebServer {
                     val searchParams = com.hirehi.domain.model.JobSearchParams(
                         keywords = listOf("Kotlin", "Android")
                     )
-                    val statistics = kotlinx.coroutines.runBlocking {
-                        jobService.loadAndSaveJobs(searchParams)
-                    }
-                    val (jobs, _) = jobService.loadJobsFromJson()
-                    val html = jobService.generateHtmlPage(jobs, statistics)
-                    jobService.saveHtmlToFile(html)
+                            val statistics = kotlinx.coroutines.runBlocking {
+                                jobService.loadAndSaveJobs(searchParams)
+                            }
+                            val (jobs, _) = if (DatabaseConfig.isDatabaseAvailable()) {
+                                kotlinx.coroutines.runBlocking {
+                                    jobService.loadJobsFromJsonExcludingArchived()
+                                }
+                            } else {
+                                jobService.loadJobsFromJson()
+                            }
+                            val html = kotlinx.coroutines.runBlocking {
+                                jobService.generateHtmlPage(jobs, statistics)
+                            }
+                            jobService.saveHtmlToFile(html)
                     
                     val response = org.json.JSONObject().apply {
                         put("status", "success")

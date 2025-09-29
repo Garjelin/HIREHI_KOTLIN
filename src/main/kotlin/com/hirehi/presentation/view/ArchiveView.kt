@@ -83,7 +83,6 @@ class ArchiveView {
             appendLine("            </div>")
             appendLine("            <div class=\"nav-buttons\">")
             appendLine("                <a href=\"/\" class=\"nav-btn\">🏠 Главная</a>")
-            appendLine("                <button class=\"nav-btn\" onclick=\"location.reload()\">🔄 Обновить</button>")
             appendLine("            </div>")
             appendLine("            <div style=\"text-align: center; color: #4a5568; font-size: 0.9em; margin-top: 15px;\">")
             appendLine("                🕒 Обновлено: $currentTime")

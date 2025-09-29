@@ -1,11 +1,13 @@
 package com.hirehi.presentation.service
 
+import com.hirehi.data.repository.ArchiveRepositoryImpl
 import com.hirehi.data.remote.HireHiScraper
 import com.hirehi.data.repository.JobRepositoryImpl
 import com.hirehi.domain.model.ArchivedJob
 import com.hirehi.domain.model.Job
 import com.hirehi.domain.model.JobSearchParams
 import com.hirehi.domain.model.JobStatistics
+import com.hirehi.domain.usecase.GetArchivedJobsUseCase
 import com.hirehi.domain.usecase.GetJobsUseCase
 import com.hirehi.presentation.view.ArchiveView
 import com.hirehi.presentation.view.JobView
@@ -20,6 +22,8 @@ class JobService {
     private val getJobsUseCase = GetJobsUseCase(repository)
     private val jobView = JobView()
     private val archiveView = ArchiveView()
+    private val archiveRepository = ArchiveRepositoryImpl()
+    private val getArchivedJobsUseCase = GetArchivedJobsUseCase(archiveRepository)
 
     suspend fun loadAndSaveJobs(searchParams: JobSearchParams): JobStatistics {
         // Получаем все вакансии
@@ -42,8 +46,9 @@ class JobService {
         return statistics
     }
 
-    fun generateHtmlPage(jobs: List<Job>, statistics: JobStatistics? = null): String {
-        return jobView.generateHtmlPage(jobs, statistics)
+    suspend fun generateHtmlPage(jobs: List<Job>, statistics: JobStatistics? = null): String {
+        val archiveCount = getArchiveCount()
+        return jobView.generateHtmlPage(jobs, statistics, archiveCount)
     }
     
     fun generateArchivePage(archivedJobs: List<ArchivedJob>): String {
@@ -93,6 +98,41 @@ class JobService {
         } catch (e: Exception) {
             println("❌ Ошибка при загрузке JSON: ${e.message}")
             Pair(emptyList(), null)
+        }
+    }
+
+    suspend fun loadJobsFromJsonExcludingArchived(): Pair<List<Job>, JobStatistics?> {
+        val (allJobs, statistics) = loadJobsFromJson()
+        
+        return try {
+            // Получаем список архивированных ID
+            val archivedJobs = getArchivedJobsUseCase.execute(10000, 0) // Получаем все архивированные
+            val archivedIds = archivedJobs.map { it.id }.toSet()
+            
+            // Фильтруем вакансии, исключая архивированные
+            val filteredJobs = allJobs.filter { job -> job.id !in archivedIds }
+            
+            // Обновляем статистику с учетом архивированных
+            val updatedStatistics = statistics?.copy(
+                filteredJobs = filteredJobs.size
+            )
+            
+            println("📊 Отфильтровано ${allJobs.size - filteredJobs.size} архивированных вакансий")
+            Pair(filteredJobs, updatedStatistics)
+        } catch (e: Exception) {
+            println("⚠️ Ошибка при фильтрации архивированных вакансий: ${e.message}")
+            // В случае ошибки возвращаем все вакансии
+            Pair(allJobs, statistics)
+        }
+    }
+
+    suspend fun getArchiveCount(): Int {
+        return try {
+            val archivedJobs = getArchivedJobsUseCase.execute(10000, 0)
+            archivedJobs.size
+        } catch (e: Exception) {
+            println("⚠️ Ошибка при получении количества архивированных вакансий: ${e.message}")
+            0
         }
     }
 

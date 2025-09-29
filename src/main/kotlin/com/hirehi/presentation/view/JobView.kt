@@ -7,7 +7,7 @@ import java.time.format.DateTimeFormatter
 
 class JobView {
 
-    fun generateHtmlPage(jobs: List<Job>, statistics: JobStatistics? = null): String {
+    fun generateHtmlPage(jobs: List<Job>, statistics: JobStatistics? = null, archiveCount: Int = 0): String {
         val currentTime = statistics?.lastUpdated?.let { 
             LocalDateTime.parse(it, DateTimeFormatter.ISO_LOCAL_DATE_TIME)
                 .format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"))
@@ -83,7 +83,7 @@ class JobView {
             appendLine("                    <div class=\"stat-label\">После фильтрации</div>")
             appendLine("                </div>")
             appendLine("                <div class=\"stat-card\">")
-            appendLine("                    <div class=\"stat-number\">0</div>")
+            appendLine("                    <div class=\"stat-number\">$archiveCount</div>")
             appendLine("                    <div class=\"stat-label\">В архиве</div>")
             appendLine("                </div>")
             appendLine("            </div>")
