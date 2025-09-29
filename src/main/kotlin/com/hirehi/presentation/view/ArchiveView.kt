@@ -1,0 +1,167 @@
+package com.hirehi.presentation.view
+
+import com.hirehi.domain.model.ArchivedJob
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+
+class ArchiveView {
+
+    fun generateArchivePage(archivedJobs: List<ArchivedJob>): String {
+        val currentTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"))
+        
+        return buildString {
+            appendLine("<!DOCTYPE html>")
+            appendLine("<html lang=\"ru\">")
+            appendLine("<head>")
+            appendLine("    <meta charset=\"UTF-8\">")
+            appendLine("    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">")
+            appendLine("    <title>Архив вакансий - HireHi (${archivedJobs.size})</title>")
+            appendLine("    <style>")
+            appendLine("        :root {")
+            appendLine("            --primary-blue: #3b82f6;")
+            appendLine("            --light-blue-bg: #e0f2fe;")
+            appendLine("            --blue-border: #0ea5e9;")
+            appendLine("            --gradient-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);")
+            appendLine("            --white-bg: rgba(255,255,255,0.95);")
+            appendLine("            --text-dark: #2d3748;")
+            appendLine("            --text-gray: #4a5568;")
+            appendLine("            --archive-bg: #fff3cd;")
+            appendLine("            --archive-border: #ffeaa7;")
+            appendLine("            --delete-red: #dc3545;")
+            appendLine("        }")
+            appendLine("        * { margin: 0; padding: 0; box-sizing: border-box; }")
+            appendLine("        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--gradient-bg); min-height: 100vh; }")
+            appendLine("        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }")
+            appendLine("        .header { background: var(--white-bg); backdrop-filter: blur(10px); border-radius: 20px; padding: 30px; margin-bottom: 30px; box-shadow: 0 8px 32px rgba(0,0,0,0.1); }")
+            appendLine("        .header h1 { color: var(--text-dark); font-size: 2.5em; margin-bottom: 20px; text-align: center; }")
+            appendLine("        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 20px; }")
+            appendLine("        .stat-card { background: var(--primary-blue); color: white; padding: 20px; border-radius: 15px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }")
+            appendLine("        .stat-number { font-size: 2em; font-weight: bold; margin-bottom: 5px; }")
+            appendLine("        .stat-label { font-size: 0.9em; opacity: 0.9; }")
+            appendLine("        .nav-buttons { display: flex; gap: 15px; justify-content: center; margin: 20px 0; }")
+            appendLine("        .nav-btn { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-decoration: none; padding: 12px 24px; border-radius: 25px; font-weight: 500; transition: transform 0.2s; }")
+            appendLine("        .nav-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(0,0,0,0.2); }")
+            appendLine("        .jobs-container { display: grid; gap: 20px; }")
+            appendLine("        .job-card { background: var(--archive-bg); border: 2px solid var(--archive-border); border-radius: 20px; padding: 25px; box-shadow: 0 8px 32px rgba(0,0,0,0.1); transition: transform 0.3s, box-shadow 0.3s; }")
+            appendLine("        .job-card:hover { transform: translateY(-5px); box-shadow: 0 12px 40px rgba(0,0,0,0.15); }")
+            appendLine("        .job-title { color: #2d3748; font-size: 1.4em; font-weight: 600; margin-bottom: 15px; line-height: 1.3; }")
+            appendLine("        .job-company { color: #4a5568; font-size: 1.1em; font-weight: 500; margin-bottom: 15px; }")
+            appendLine("        .job-chips { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }")
+            appendLine("        .chip { padding: 6px 12px; border-radius: 15px; font-size: 0.85em; font-weight: 500; display: flex; align-items: center; gap: 5px; }")
+            appendLine("        .chip-salary { background: #fed7d7; color: #c53030; }")
+            appendLine("        .chip-level { background: #c6f6d5; color: #2f855a; }")
+            appendLine("        .chip-format { background: #e9d8fd; color: #553c9a; }")
+            appendLine("        .archive-info { background: #f8d7da; border: 1px solid #f5c6cb; border-radius: 10px; padding: 15px; margin: 15px 0; }")
+            appendLine("        .archive-date { color: #721c24; font-weight: 500; margin-bottom: 5px; }")
+            appendLine("        .archive-reason { color: #856404; font-style: italic; }")
+            appendLine("        .job-actions { display: flex; gap: 15px; align-items: center; margin-top: 15px; }")
+            appendLine("        .job-link { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-decoration: none; padding: 12px 24px; border-radius: 25px; font-weight: 500; display: inline-block; transition: transform 0.2s; }")
+            appendLine("        .job-link:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(0,0,0,0.2); }")
+            appendLine("        .delete-btn { background: var(--delete-red); color: white; border: none; padding: 10px 15px; border-radius: 20px; cursor: pointer; font-weight: 500; transition: transform 0.2s; display: flex; align-items: center; gap: 5px; }")
+            appendLine("        .delete-btn:hover { transform: translateY(-2px); background: #c82333; box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3); }")
+            appendLine("        .no-jobs { text-align: center; color: white; font-size: 1.2em; padding: 40px; }")
+            appendLine("        .emoji { font-size: 1.2em; }")
+            appendLine("    </style>")
+            appendLine("</head>")
+            appendLine("<body>")
+            appendLine("    <div class=\"container\">")
+            appendLine("        <div class=\"header\">")
+            appendLine("            <h1>🗄️ Архив вакансий</h1>")
+            appendLine("            <div class=\"stats-grid\">")
+            appendLine("                <div class=\"stat-card\">")
+            appendLine("                    <div class=\"stat-number\">${archivedJobs.size}</div>")
+            appendLine("                    <div class=\"stat-label\">Всего в архиве</div>")
+            appendLine("                </div>")
+            appendLine("                <div class=\"stat-card\">")
+            appendLine("                    <div class=\"stat-number\">${archivedJobs.count { !it.archiveReason.isNullOrBlank() }}</div>")
+            appendLine("                    <div class=\"stat-label\">С причиной</div>")
+            appendLine("                </div>")
+            appendLine("                <div class=\"stat-card\">")
+            appendLine("                    <div class=\"stat-number\">${archivedJobs.map { it.company }.distinct().size}</div>")
+            appendLine("                    <div class=\"stat-label\">Компаний</div>")
+            appendLine("                </div>")
+            appendLine("            </div>")
+            appendLine("            <div class=\"nav-buttons\">")
+            appendLine("                <a href=\"/\" class=\"nav-btn\">🏠 Главная</a>")
+            appendLine("                <button class=\"nav-btn\" onclick=\"location.reload()\">🔄 Обновить</button>")
+            appendLine("            </div>")
+            appendLine("            <div style=\"text-align: center; color: #4a5568; font-size: 0.9em; margin-top: 15px;\">")
+            appendLine("                🕒 Обновлено: $currentTime")
+            appendLine("            </div>")
+            appendLine("        </div>")
+            
+            if (archivedJobs.isEmpty()) {
+                appendLine("        <div class=\"no-jobs\">")
+                appendLine("            <div class=\"emoji\">📦</div>")
+                appendLine("            <div>Архив пуст</div>")
+                appendLine("            <div style=\"font-size: 0.9em; margin-top: 10px; opacity: 0.8;\">Архивированные вакансии будут отображаться здесь</div>")
+                appendLine("        </div>")
+            } else {
+                appendLine("        <div class=\"jobs-container\">")
+                archivedJobs.forEach { job ->
+                    appendLine("            <div class=\"job-card\">")
+                    appendLine("                <div class=\"job-title\">${job.title}</div>")
+                    appendLine("                <div class=\"job-company\">🏢 ${job.company}</div>")
+                    appendLine("                <div class=\"job-chips\">")
+                    if (!job.salary.isNullOrEmpty()) {
+                        appendLine("                    <div class=\"chip chip-salary\"><span class=\"emoji\">💰</span> ${job.salary}</div>")
+                    }
+                    appendLine("                    <div class=\"chip chip-level\"><span class=\"emoji\">📊</span> ${job.level}</div>")
+                    appendLine("                    <div class=\"chip chip-format\"><span class=\"emoji\">🏠</span> ${job.format}</div>")
+                    appendLine("                </div>")
+                    appendLine("                <div class=\"archive-info\">")
+                    appendLine("                    <div class=\"archive-date\">📅 Архивировано: ${formatArchiveDate(job.archivedAt)}</div>")
+                    if (!job.archiveReason.isNullOrBlank()) {
+                        appendLine("                    <div class=\"archive-reason\">💬 Причина: ${job.archiveReason}</div>")
+                    }
+                    appendLine("                </div>")
+                    appendLine("                <div class=\"job-actions\">")
+                    appendLine("                    <a href=\"${job.url}\" target=\"_blank\" class=\"job-link\">Посмотреть вакансию</a>")
+                    appendLine("                    <button class=\"delete-btn\" onclick=\"deleteJob('${job.id}')\">")
+                    appendLine("                        <span class=\"emoji\">🗑️</span> Удалить")
+                    appendLine("                    </button>")
+                    appendLine("                </div>")
+                    appendLine("            </div>")
+                }
+                appendLine("        </div>")
+            }
+            
+            appendLine("    </div>")
+            appendLine("    <script>")
+            appendLine("        async function deleteJob(jobId) {")
+            appendLine("            if (!confirm('Вы уверены, что хотите удалить эту вакансию из архива?')) {")
+            appendLine("                return;")
+            appendLine("            }")
+            appendLine("            ")
+            appendLine("            try {")
+            appendLine("                const response = await fetch(`/api/archive/\${jobId}`, {")
+            appendLine("                    method: 'DELETE'")
+            appendLine("                });")
+            appendLine("                ")
+            appendLine("                const result = await response.json();")
+            appendLine("                ")
+            appendLine("                if (response.ok) {")
+            appendLine("                    // Перезагружаем страницу для обновления списка")
+            appendLine("                    location.reload();")
+            appendLine("                } else {")
+            appendLine("                    alert('Ошибка при удалении: ' + result.error);")
+            appendLine("                }")
+            appendLine("            } catch (error) {")
+            appendLine("                alert('Ошибка при удалении: ' + error.message);")
+            appendLine("            }")
+            appendLine("        }")
+            appendLine("    </script>")
+            appendLine("</body>")
+            appendLine("</html>")
+        }
+    }
+    
+    private fun formatArchiveDate(archivedAt: String): String {
+        return try {
+            val dateTime = LocalDateTime.parse(archivedAt)
+            dateTime.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"))
+        } catch (e: Exception) {
+            archivedAt
+        }
+    }
+}

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QA Вакансии - HireHi (16 из 111)</title>
+    <title>QA Вакансии - HireHi (16 из 112)</title>
     <style>
         :root {
             --primary-blue: #3b82f6;
@@ -39,6 +39,12 @@
         .chip-format { background: #e9d8fd; color: #553c9a; }
         .job-link { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-decoration: none; padding: 12px 24px; border-radius: 25px; font-weight: 500; display: inline-block; transition: transform 0.2s; }
         .job-link:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+        .archive-section { margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 10px; border-left: 4px solid #dc3545; }
+        .archive-checkbox { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+        .archive-checkbox input[type='checkbox'] { width: 18px; height: 18px; accent-color: #dc3545; }
+        .archive-checkbox label { color: #dc3545; font-weight: 500; cursor: pointer; }
+        .archive-reason { width: 100%; padding: 8px 12px; border: 1px solid #ddd; border-radius: 5px; font-size: 0.9em; }
+        .archive-reason:focus { outline: none; border-color: #dc3545; box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.2); }
         .no-jobs { text-align: center; color: white; font-size: 1.2em; padding: 40px; }
         .emoji { font-size: 1.2em; }
     </style>
@@ -49,7 +55,7 @@
             <h1>🎯 QA Вакансии - HireHi</h1>
             <div class="stats-grid">
                 <div class="stat-card">
-                    <div class="stat-number">111</div>
+                    <div class="stat-number">112</div>
                     <div class="stat-label">Всего вакансий</div>
                 </div>
                 <div class="stat-card">
@@ -67,9 +73,12 @@
                 <span class="keyword-chip">Android</span>
             </div>
             <div style="background: var(--light-blue-bg); border: 2px solid var(--blue-border); border-radius: 15px; padding: 20px; margin: 20px 0; text-align: center;">
-                <button class="refresh-btn" onclick="refreshData()">🔄 Обновить данные</button>
-                <div style="margin-top: 15px; color: #4a5568; font-size: 0.9em;">
-                    🕒 Обновлено: 29.09.2025 16:28 | 🌐 Источник: hirehi.ru
+                <div style="display: flex; gap: 15px; justify-content: center; margin-bottom: 15px;">
+                    <button class="refresh-btn" onclick="refreshData()">🔄 Обновить данные</button>
+                    <a href="/archive" class="refresh-btn" style="text-decoration: none; display: inline-block;">🗄️ Архив</a>
+                </div>
+                <div style="color: #4a5568; font-size: 0.9em;">
+                    🕒 Обновлено: 29.09.2025 17:25 | 🌐 Источник: hirehi.ru
                 </div>
             </div>
         </div>
@@ -83,6 +92,13 @@
                     <div class="chip chip-format"><span class="emoji">🏠</span> удалённо</div>
                 </div>
                 <a href="https://hh.ru/vacancy/125851462" target="_blank" class="job-link">Посмотреть вакансию</a>
+                <div class="archive-section">
+                    <div class="archive-checkbox">
+                        <input type="checkbox" id="archive-9453" name="archive-9453">
+                        <label for="archive-9453">📦 В архив</label>
+                    </div>
+                    <input type="text" class="archive-reason" id="reason-9453" placeholder="Причина архивации (необязательно)" maxlength="500">
+                </div>
             </div>
             <div class="job-card">
                 <div class="job-title">QA Engineer (auto)</div>
@@ -93,6 +109,13 @@
                     <div class="chip chip-format"><span class="emoji">🏠</span> удалённо</div>
                 </div>
                 <a href="https://t.me/V_recruiting" target="_blank" class="job-link">Посмотреть вакансию</a>
+                <div class="archive-section">
+                    <div class="archive-checkbox">
+                        <input type="checkbox" id="archive-9356" name="archive-9356">
+                        <label for="archive-9356">📦 В архив</label>
+                    </div>
+                    <input type="text" class="archive-reason" id="reason-9356" placeholder="Причина архивации (необязательно)" maxlength="500">
+                </div>
             </div>
             <div class="job-card">
                 <div class="job-title">qa engineer (auto)</div>
@@ -103,6 +126,13 @@
                     <div class="chip chip-format"><span class="emoji">🏠</span> удалённо</div>
                 </div>
                 <a href="https://magnit.tech/vacancies/2327" target="_blank" class="job-link">Посмотреть вакансию</a>
+                <div class="archive-section">
+                    <div class="archive-checkbox">
+                        <input type="checkbox" id="archive-9321" name="archive-9321">
+                        <label for="archive-9321">📦 В архив</label>
+                    </div>
+                    <input type="text" class="archive-reason" id="reason-9321" placeholder="Причина архивации (необязательно)" maxlength="500">
+                </div>
             </div>
             <div class="job-card">
                 <div class="job-title">QA Engineer (auto)</div>
@@ -113,6 +143,13 @@
                     <div class="chip chip-format"><span class="emoji">🏠</span> удалённо</div>
                 </div>
                 <a href="https://t.me/evgeniyaponomaryova" target="_blank" class="job-link">Посмотреть вакансию</a>
+                <div class="archive-section">
+                    <div class="archive-checkbox">
+                        <input type="checkbox" id="archive-9254" name="archive-9254">
+                        <label for="archive-9254">📦 В архив</label>
+                    </div>
+                    <input type="text" class="archive-reason" id="reason-9254" placeholder="Причина архивации (необязательно)" maxlength="500">
+                </div>
             </div>
             <div class="job-card">
                 <div class="job-title">QA Engineer (auto)</div>
@@ -123,6 +160,13 @@
                     <div class="chip chip-format"><span class="emoji">🏠</span> удалённо</div>
                 </div>
                 <a href="https://t.me/nadzeya_recruiter" target="_blank" class="job-link">Посмотреть вакансию</a>
+                <div class="archive-section">
+                    <div class="archive-checkbox">
+                        <input type="checkbox" id="archive-9114" name="archive-9114">
+                        <label for="archive-9114">📦 В архив</label>
+                    </div>
+                    <input type="text" class="archive-reason" id="reason-9114" placeholder="Причина архивации (необязательно)" maxlength="500">
+                </div>
             </div>
             <div class="job-card">
                 <div class="job-title">QA Engineer (auto)</div>
@@ -133,6 +177,13 @@
                     <div class="chip chip-format"><span class="emoji">🏠</span> удалённо</div>
                 </div>
                 <a href="https://hh.ru/vacancy/125658288" target="_blank" class="job-link">Посмотреть вакансию</a>
+                <div class="archive-section">
+                    <div class="archive-checkbox">
+                        <input type="checkbox" id="archive-9033" name="archive-9033">
+                        <label for="archive-9033">📦 В архив</label>
+                    </div>
+                    <input type="text" class="archive-reason" id="reason-9033" placeholder="Причина архивации (необязательно)" maxlength="500">
+                </div>
             </div>
             <div class="job-card">
                 <div class="job-title">QA тестировщик (auto)</div>
@@ -143,6 +194,13 @@
                     <div class="chip chip-format"><span class="emoji">🏠</span> удалённо</div>
                 </div>
                 <a href="https://hh.ru/vacancy/125605612" target="_blank" class="job-link">Посмотреть вакансию</a>
+                <div class="archive-section">
+                    <div class="archive-checkbox">
+                        <input type="checkbox" id="archive-8870" name="archive-8870">
+                        <label for="archive-8870">📦 В архив</label>
+                    </div>
+                    <input type="text" class="archive-reason" id="reason-8870" placeholder="Причина архивации (необязательно)" maxlength="500">
+                </div>
             </div>
             <div class="job-card">
                 <div class="job-title">QA тестировщик (auto)</div>
@@ -153,6 +211,13 @@
                     <div class="chip chip-format"><span class="emoji">🏠</span> удалённо</div>
                 </div>
                 <a href="https://t.me/BubenTatiana" target="_blank" class="job-link">Посмотреть вакансию</a>
+                <div class="archive-section">
+                    <div class="archive-checkbox">
+                        <input type="checkbox" id="archive-8814" name="archive-8814">
+                        <label for="archive-8814">📦 В архив</label>
+                    </div>
+                    <input type="text" class="archive-reason" id="reason-8814" placeholder="Причина архивации (необязательно)" maxlength="500">
+                </div>
             </div>
             <div class="job-card">
                 <div class="job-title">QA тестировщик (auto)</div>
@@ -163,6 +228,13 @@
                     <div class="chip chip-format"><span class="emoji">🏠</span> удалённо</div>
                 </div>
                 <a href="https://career.avito.com/vacancies/razrabotka/17352/" target="_blank" class="job-link">Посмотреть вакансию</a>
+                <div class="archive-section">
+                    <div class="archive-checkbox">
+                        <input type="checkbox" id="archive-8359" name="archive-8359">
+                        <label for="archive-8359">📦 В архив</label>
+                    </div>
+                    <input type="text" class="archive-reason" id="reason-8359" placeholder="Причина архивации (необязательно)" maxlength="500">
+                </div>
             </div>
             <div class="job-card">
                 <div class="job-title">QA тестировщик (auto)</div>
@@ -173,6 +245,13 @@
                     <div class="chip chip-format"><span class="emoji">🏠</span> удалённо</div>
                 </div>
                 <a href="https://hh.ru/vacancy/125396441" target="_blank" class="job-link">Посмотреть вакансию</a>
+                <div class="archive-section">
+                    <div class="archive-checkbox">
+                        <input type="checkbox" id="archive-8351" name="archive-8351">
+                        <label for="archive-8351">📦 В архив</label>
+                    </div>
+                    <input type="text" class="archive-reason" id="reason-8351" placeholder="Причина архивации (необязательно)" maxlength="500">
+                </div>
             </div>
             <div class="job-card">
                 <div class="job-title">QA тестировщик (auto)</div>
@@ -183,6 +262,13 @@
                     <div class="chip chip-format"><span class="emoji">🏠</span> удалённо</div>
                 </div>
                 <a href="https://t.me/chloe_cay" target="_blank" class="job-link">Посмотреть вакансию</a>
+                <div class="archive-section">
+                    <div class="archive-checkbox">
+                        <input type="checkbox" id="archive-8298" name="archive-8298">
+                        <label for="archive-8298">📦 В архив</label>
+                    </div>
+                    <input type="text" class="archive-reason" id="reason-8298" placeholder="Причина архивации (необязательно)" maxlength="500">
+                </div>
             </div>
             <div class="job-card">
                 <div class="job-title">QA тестировщик (auto)</div>
@@ -193,6 +279,13 @@
                     <div class="chip chip-format"><span class="emoji">🏠</span> удалённо</div>
                 </div>
                 <a href="https://telegra.ph/QA-Tester-09-14" target="_blank" class="job-link">Посмотреть вакансию</a>
+                <div class="archive-section">
+                    <div class="archive-checkbox">
+                        <input type="checkbox" id="archive-8295" name="archive-8295">
+                        <label for="archive-8295">📦 В архив</label>
+                    </div>
+                    <input type="text" class="archive-reason" id="reason-8295" placeholder="Причина архивации (необязательно)" maxlength="500">
+                </div>
             </div>
             <div class="job-card">
                 <div class="job-title">QA Engineer (auto)</div>
@@ -203,6 +296,13 @@
                     <div class="chip chip-format"><span class="emoji">🏠</span> удалённо</div>
                 </div>
                 <a href="https://hh.ru/vacancy/125391076" target="_blank" class="job-link">Посмотреть вакансию</a>
+                <div class="archive-section">
+                    <div class="archive-checkbox">
+                        <input type="checkbox" id="archive-8292" name="archive-8292">
+                        <label for="archive-8292">📦 В архив</label>
+                    </div>
+                    <input type="text" class="archive-reason" id="reason-8292" placeholder="Причина архивации (необязательно)" maxlength="500">
+                </div>
             </div>
             <div class="job-card">
                 <div class="job-title">Тестировщик (auto)</div>
@@ -213,6 +313,13 @@
                     <div class="chip chip-format"><span class="emoji">🏠</span> удалённо</div>
                 </div>
                 <a href="https://hh.ru/vacancy/125345973" target="_blank" class="job-link">Посмотреть вакансию</a>
+                <div class="archive-section">
+                    <div class="archive-checkbox">
+                        <input type="checkbox" id="archive-8180" name="archive-8180">
+                        <label for="archive-8180">📦 В архив</label>
+                    </div>
+                    <input type="text" class="archive-reason" id="reason-8180" placeholder="Причина архивации (необязательно)" maxlength="500">
+                </div>
             </div>
             <div class="job-card">
                 <div class="job-title">QA Engineer (auto)</div>
@@ -223,6 +330,13 @@
                     <div class="chip chip-format"><span class="emoji">🏠</span> удалённо</div>
                 </div>
                 <a href="https://t.me/ansharkunova" target="_blank" class="job-link">Посмотреть вакансию</a>
+                <div class="archive-section">
+                    <div class="archive-checkbox">
+                        <input type="checkbox" id="archive-8143" name="archive-8143">
+                        <label for="archive-8143">📦 В архив</label>
+                    </div>
+                    <input type="text" class="archive-reason" id="reason-8143" placeholder="Причина архивации (необязательно)" maxlength="500">
+                </div>
             </div>
             <div class="job-card">
                 <div class="job-title">qa engineer (auto)</div>
@@ -233,6 +347,13 @@
                     <div class="chip chip-format"><span class="emoji">🏠</span> удалённо</div>
                 </div>
                 <a href="https://t.me/Valeria_Increment" target="_blank" class="job-link">Посмотреть вакансию</a>
+                <div class="archive-section">
+                    <div class="archive-checkbox">
+                        <input type="checkbox" id="archive-5643" name="archive-5643">
+                        <label for="archive-5643">📦 В архив</label>
+                    </div>
+                    <input type="text" class="archive-reason" id="reason-5643" placeholder="Причина архивации (необязательно)" maxlength="500">
+                </div>
             </div>
         </div>
     </div>
@@ -244,6 +365,10 @@
             button.disabled = true;
             
             try {
+                // Сначала архивируем отмеченные вакансии
+                await archiveSelectedJobs();
+                
+                // Затем обновляем данные
                 const response = await fetch('/api/refresh', { method: 'POST' });
                 const data = await response.json();
                 
@@ -259,6 +384,34 @@
                 alert('Ошибка при обновлении: ' + error.message);
                 button.textContent = originalText;
                 button.disabled = false;
+            }
+        }
+        
+        async function archiveSelectedJobs() {
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]:checked');
+            const archivePromises = [];
+            
+            for (const checkbox of checkboxes) {
+                const jobId = checkbox.id.replace('archive-', '');
+                const reasonInput = document.getElementById('reason-' + jobId);
+                const reason = reasonInput ? reasonInput.value.trim() : '';
+                
+                const archivePromise = fetch('/api/archive', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ jobId: jobId, reason: reason || null })
+                });
+                
+                archivePromises.push(archivePromise);
+            }
+            
+            if (archivePromises.length > 0) {
+                const results = await Promise.all(archivePromises);
+                const successCount = results.filter(r => r.ok).length;
+                
+                if (successCount > 0) {
+                    console.log(`Архивировано вакансий: ${successCount}`);
+                }
             }
         }
     </script>

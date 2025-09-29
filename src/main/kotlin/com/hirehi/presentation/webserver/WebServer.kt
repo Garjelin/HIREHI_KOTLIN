@@ -91,11 +91,20 @@ class WebServer {
             }
 
             get("/archive") {
-                val htmlFile = File("archive_test.html")
-                if (htmlFile.exists()) {
-                    call.respondText(htmlFile.readText(), ContentType.Text.Html)
-                } else {
-                    call.respondText("Archive test page not found.", ContentType.Text.Plain)
+                try {
+                    val archivedJobs = if (DatabaseConfig.isDatabaseAvailable()) {
+                        kotlinx.coroutines.runBlocking {
+                            getArchivedJobsUseCase.execute(1000, 0) // Получаем все архивированные вакансии
+                        }
+                    } else {
+                        emptyList()
+                    }
+                    
+                    val archiveHtml = jobService.generateArchivePage(archivedJobs)
+                    call.respondText(archiveHtml, ContentType.Text.Html)
+                } catch (e: Exception) {
+                    println("❌ Ошибка при генерации страницы архива: ${e.message}")
+                    call.respondText("Ошибка при загрузке страницы архива", ContentType.Text.Plain)
                 }
             }
 

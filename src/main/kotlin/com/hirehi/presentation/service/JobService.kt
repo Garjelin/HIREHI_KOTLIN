@@ -2,10 +2,12 @@ package com.hirehi.presentation.service
 
 import com.hirehi.data.remote.HireHiScraper
 import com.hirehi.data.repository.JobRepositoryImpl
+import com.hirehi.domain.model.ArchivedJob
 import com.hirehi.domain.model.Job
 import com.hirehi.domain.model.JobSearchParams
 import com.hirehi.domain.model.JobStatistics
 import com.hirehi.domain.usecase.GetJobsUseCase
+import com.hirehi.presentation.view.ArchiveView
 import com.hirehi.presentation.view.JobView
 import java.io.File
 import java.time.LocalDateTime
@@ -17,6 +19,7 @@ class JobService {
     private val repository = JobRepositoryImpl(scraper)
     private val getJobsUseCase = GetJobsUseCase(repository)
     private val jobView = JobView()
+    private val archiveView = ArchiveView()
 
     suspend fun loadAndSaveJobs(searchParams: JobSearchParams): JobStatistics {
         // Получаем все вакансии
@@ -41,6 +44,10 @@ class JobService {
 
     fun generateHtmlPage(jobs: List<Job>, statistics: JobStatistics? = null): String {
         return jobView.generateHtmlPage(jobs, statistics)
+    }
+    
+    fun generateArchivePage(archivedJobs: List<ArchivedJob>): String {
+        return archiveView.generateArchivePage(archivedJobs)
     }
 
     fun saveHtmlToFile(html: String, filename: String = "jobs_display.html") {
