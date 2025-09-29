@@ -77,6 +77,7 @@ class WebServer {
             allowHeader("Content-Type")
             allowMethod(io.ktor.http.HttpMethod.Get)
             allowMethod(io.ktor.http.HttpMethod.Post)
+            allowMethod(io.ktor.http.HttpMethod.Delete)
         }
 
         // Настройка маршрутов
